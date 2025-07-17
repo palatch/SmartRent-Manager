@@ -4,47 +4,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rental Manager AI</title>
+  <title>SmartRent Manager</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
   <style>
-    body {
+    * { box-sizing: border-box; }
+    html, body {
       font-family: 'Prompt', sans-serif;
       margin: 0;
-      background: linear-gradient(to bottom right, #f0f4f8, #ffffff);
-      color: #333;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom right, #f7f9fc, #ffffff);
     }
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 1rem;
-      background: #00bfa5;
+      background: #4FC3F7;
       color: white;
+      font-size: 1.2rem;
     }
     .button {
-      background: linear-gradient(to right, #00c6ff, #0072ff);
+      background: #4FC3F7;
       color: white;
-      padding: 0.7rem 1.5rem;
+      padding: 0.7rem 1.2rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 50px;
       cursor: pointer;
+      font-size: 1rem;
       margin: 0.3rem;
     }
     .container {
       padding: 1rem;
+      width: 100%;
     }
     .hidden {
       display: none;
     }
     .card {
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 1rem;
-      margin: 0.5rem 0;
+      margin-bottom: 1rem;
       color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
     }
-    .status-red { background-color: #e74c3c; }
-    .status-yellow { background-color: #f1c40f; }
-    .status-green { background-color: #2ecc71; }
+    .status-red { background-color: #EF5350; }
+    .status-yellow { background-color: #FFCA28; }
+    .status-green { background-color: #66BB6A; }
 
     nav {
       position: fixed;
@@ -52,30 +60,32 @@
       width: 100%;
       display: flex;
       justify-content: space-around;
-      background: #e0f7fa;
+      background: #ffffff;
       border-top: 1px solid #ccc;
     }
     nav button {
       flex: 1;
-      padding: 1rem 0;
+      padding: 1rem;
       background: none;
       border: none;
       font-size: 1rem;
-      color: #00796b;
+      color: #4FC3F7;
     }
     input, select {
       width: 100%;
-      padding: 0.5rem;
-      margin: 0.3rem 0;
+      padding: 0.6rem;
+      margin: 0.4rem 0;
+      border-radius: 8px;
       border: 1px solid #ccc;
-      border-radius: 6px;
     }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.5rem; border: 1px solid #ccc; text-align: left; }
   </style>
 </head>
 <body>
 
 <header>
-  <div id="title">Rental Manager AI</div>
+  <div id="title">SmartRent Manager</div>
   <button class="button" onclick="toggleLanguage()" id="langBtn">TH</button>
 </header>
 
@@ -98,10 +108,7 @@
   <input type="date" id="startDate"/>
   <input type="date" id="endDate"/>
   <input type="number" id="monthlyRent" placeholder="Monthly Rent"/>
-  <select id="dueDay">
-    <option value="1">1</option>
-    <option value="15">15</option>
-  </select>
+  <select id="dueDay"><option value="1">1</option><option value="15">15</option></select>
   <input type="number" id="deposit" placeholder="Deposit"/>
   <button class="button" onclick="saveRoom()">Save Room</button>
 </div>
@@ -115,24 +122,25 @@
   <h2 id="settingsTitle">Settings</h2>
   <button class="button" onclick="clearData()">Clear Income/Expense</button>
   <button class="button" onclick="exportData()">Export Data</button>
-  <input type="file" onchange="importData(event)"/>
+  <input type="file" onchange="importData(event)" class="button"/>
   <button class="button" onclick="logout()">Logout</button>
-  <p>Data is stored locally in your device (LocalStorage).</p>
+  <p>Data is stored locally (LocalStorage). Auto backup enabled.</p>
 </div>
 
 <nav class="hidden" id="mainNav">
-  <button onclick="showScreen('roomListScreen')">Rooms</button>
-  <button onclick="showScreen('addRoomScreen')">Add</button>
-  <button onclick="showScreen('summaryScreen')">Summary</button>
-  <button onclick="showScreen('settingsScreen')">Settings</button>
+  <button onclick="showScreen('roomListScreen')" id="navRooms">Rooms</button>
+  <button onclick="showScreen('addRoomScreen')" id="navAdd">Add</button>
+  <button onclick="showScreen('summaryScreen')" id="navSummary">Summary</button>
+  <button onclick="showScreen('settingsScreen')" id="navSettings">Settings</button>
 </nav>
 
 <script>
   const user = "admin", pass = "0000";
-  let lang = "EN";
+  let lang = "EN", logoutTimer;
+
   const translations = {
-    EN: { login: "Login", roomList: "All Rooms", addRoom: "Add Room", summary: "Summary", settings: "Settings" },
-    TH: { login: "เข้าสู่ระบบ", roomList: "ห้องทั้งหมด", addRoom: "เพิ่มห้อง", summary: "สรุป", settings: "ตั้งค่า" }
+    EN: { login: "Login", roomList: "All Rooms", addRoom: "Add Room", summary: "Summary", settings: "Settings", rooms: "Rooms", logout: "Logout" },
+    TH: { login: "เข้าสู่ระบบ", roomList: "ห้องทั้งหมด", addRoom: "เพิ่มห้อง", summary: "สรุป", settings: "ตั้งค่า", rooms: "ห้อง", logout: "ออกจากระบบ" }
   };
 
   function toggleLanguage() {
@@ -143,6 +151,10 @@
     document.getElementById("addRoomTitle").innerText = translations[lang].addRoom;
     document.getElementById("summaryTitle").innerText = translations[lang].summary;
     document.getElementById("settingsTitle").innerText = translations[lang].settings;
+    document.getElementById("navRooms").innerText = translations[lang].rooms;
+    document.getElementById("navAdd").innerText = translations[lang].addRoom;
+    document.getElementById("navSummary").innerText = translations[lang].summary;
+    document.getElementById("navSettings").innerText = translations[lang].settings;
   }
 
   function login() {
@@ -151,6 +163,8 @@
       document.getElementById("roomListScreen").classList.remove("hidden");
       document.getElementById("mainNav").classList.remove("hidden");
       renderRooms();
+      autoBackup();
+      resetLogoutTimer();
     } else {
       alert("Login failed");
     }
@@ -161,7 +175,7 @@
   }
 
   function showScreen(id) {
-    ["roomListScreen","addRoomScreen","summaryScreen","settingsScreen"].forEach(s => {
+    ["roomListScreen", "addRoomScreen", "summaryScreen", "settingsScreen"].forEach(s => {
       document.getElementById(s).classList.add("hidden");
     });
     document.getElementById(id).classList.remove("hidden");
@@ -204,7 +218,7 @@
   function renderSummary() {
     const table = document.getElementById("summaryTable");
     const data = JSON.parse(localStorage.getItem("rooms") || "[]");
-    let html = '<table border="1" cellpadding="5" style="width:100%;text-align:left;"><tr><th>Room</th><th>Income</th><th>Expense</th><th>Net</th></tr>';
+    let html = '<table><tr><th>Room</th><th>Income</th><th>Expense</th><th>Net</th></tr>';
     let totalIn = 0, totalOut = 0;
     data.forEach(r => {
       totalIn += r.income;
@@ -228,15 +242,10 @@
   function exportData() {
     const data = localStorage.getItem("rooms");
     const blob = new Blob([data], { type: "application/json" });
-    const file = new File([blob], "rooms.json", { type: "application/json" });
-    if (navigator.share) {
-      navigator.share({ files: [file], title: "Rental Data", text: "Backup file" });
-    } else {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "rooms.json";
-      a.click();
-    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "rooms.json";
+    a.click();
   }
 
   function importData(event) {
@@ -250,6 +259,26 @@
     };
     reader.readAsText(file);
   }
+
+  function autoBackup() {
+    const data = localStorage.getItem("rooms") || "[]";
+    let index = parseInt(localStorage.getItem("backupIndex") || "0");
+    localStorage.setItem("backup" + index, data);
+    index = (index + 1) % 4;
+    localStorage.setItem("backupIndex", index);
+  }
+
+  function resetLogoutTimer() {
+    clearTimeout(logoutTimer);
+    logoutTimer = setTimeout(() => {
+      alert("Session expired. Logging out.");
+      logout();
+    }, 5 * 60 * 1000);
+  }
+
+  ["click", "mousemove", "keydown", "touchstart"].forEach(evt =>
+    document.addEventListener(evt, resetLogoutTimer, true)
+  );
 </script>
 </body>
 </html>
