@@ -72,6 +72,14 @@
     nav button:active {
       background: #b2ebf2;
     }
+    input {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.6rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -82,18 +90,72 @@
 </header>
 
 <div class="container" id="loginScreen">
-  <h2>Login</h2>
-  <input type="text" placeholder="Username" style="width:100%;margin:0.5rem 0;padding:0.5rem"/>
-  <input type="password" placeholder="Password" style="width:100%;margin:0.5rem 0;padding:0.5rem"/>
-  <button class="button">Login</button>
+  <h2 id="loginTitle">Login</h2>
+  <input type="text" id="username" placeholder="Username"/>
+  <input type="password" id="password" placeholder="Password"/>
+  <button class="button" onclick="login()">Login</button>
 </div>
 
-<nav>
-  <button onclick="">🏠</button>
+<div class="container hidden" id="roomListScreen">
+  <h2>All Rooms</h2>
+  <p>Login successful. Welcome to SmartRent Manager.</p>
+</div>
+
+<nav class="hidden" id="mainNav">
+  <button onclick="showScreen('roomListScreen')">🏠</button>
   <button onclick="">➕</button>
   <button onclick="">📊</button>
   <button onclick="">⚙️</button>
 </nav>
 
+<script>
+  const user = "admin", pass = "0000";
+  let logoutTimer;
+
+  function login() {
+    const u = document.getElementById("username").value;
+    const p = document.getElementById("password").value;
+    if (u === user && p === pass) {
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("roomListScreen").classList.remove("hidden");
+      document.getElementById("mainNav").classList.remove("hidden");
+      autoBackup();
+      resetLogoutTimer();
+    } else {
+      alert("Incorrect username or password");
+    }
+  }
+
+  function showScreen(id) {
+    ["roomListScreen"].forEach(s => {
+      document.getElementById(s).classList.add("hidden");
+    });
+    document.getElementById(id).classList.remove("hidden");
+  }
+
+  function autoBackup() {
+    const data = localStorage.getItem("rooms") || "[]";
+    let index = parseInt(localStorage.getItem("backupIndex") || "0");
+    localStorage.setItem("backup" + index, data);
+    index = (index + 1) % 4;
+    localStorage.setItem("backupIndex", index);
+  }
+
+  function resetLogoutTimer() {
+    clearTimeout(logoutTimer);
+    logoutTimer = setTimeout(() => {
+      alert("Session expired. Logging out.");
+      location.reload();
+    }, 5 * 60 * 1000);
+  }
+
+  ["click", "mousemove", "keydown", "touchstart"].forEach(evt =>
+    document.addEventListener(evt, resetLogoutTimer, true)
+  );
+
+  function toggleLanguage() {
+    alert("Language toggle will be available in full version.");
+  }
+</script>
 </body>
 </html>
