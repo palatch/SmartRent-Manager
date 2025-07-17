@@ -1,161 +1,143 @@
 
+<!-- SmartRent Manager - Full Feature with Room Detail, Income/Expense, and Summary Chart -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartRent Manager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary-color: #00bcd4;
-      --accent-color: #ff4081;
-      --bg-gradient: linear-gradient(135deg, #e0f7fa, #ffe0f7);
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: 'Prompt', sans-serif;
-      background: var(--bg-gradient);
-    }
-    header {
-      background: var(--primary-color);
-      color: white;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1.2rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .container {
-      padding: 1rem;
-    }
-    .button {
-      display: inline-block;
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.1s ease, box-shadow 0.2s ease;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .button:active {
-      transform: scale(0.95);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .hidden {
-      display: none;
-    }
-    nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      display: flex;
-      background: white;
-      border-top: 1px solid #ccc;
-    }
-    nav button {
-      flex: 1;
-      padding: 1rem;
-      font-size: 1rem;
-      background: none;
-      border: none;
-      color: var(--primary-color);
-      transition: background 0.3s;
-    }
-    nav button:active {
-      background: #b2ebf2;
-    }
-    input {
-      width: 100%;
-      margin: 0.5rem 0;
-      padding: 0.6rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
+    body { font-family: sans-serif; margin: 0; background: #f4f4f4; }
+    header { background: #00bcd4; color: white; padding: 1rem; text-align: center; }
+    .container { padding: 1rem; }
+    .room-card { background: white; margin-bottom: 1rem; padding: 1rem; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .button { background: #00bcd4; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin-top: 0.5rem; }
+    .hidden { display: none; }
+    table { width: 100%; margin-top: 1rem; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
   </style>
 </head>
 <body>
 
-<header>
-  <div>SmartRent Manager</div>
-  <button class="button" onclick="toggleLanguage()">TH</button>
-</header>
+<header>SmartRent Manager</header>
 
-<div class="container" id="loginScreen">
-  <h2 id="loginTitle">Login</h2>
-  <input type="text" id="username" placeholder="Username"/>
-  <input type="password" id="password" placeholder="Password"/>
-  <button class="button" onclick="login()">Login</button>
-</div>
-
-<div class="container hidden" id="roomListScreen">
+<div class="container" id="roomListView">
   <h2>All Rooms</h2>
-  <p>Login successful. Welcome to SmartRent Manager.</p>
+  <div id="roomList"></div>
 </div>
 
-<nav class="hidden" id="mainNav">
-  <button onclick="showScreen('roomListScreen')">🏠</button>
-  <button onclick="">➕</button>
-  <button onclick="">📊</button>
-  <button onclick="">⚙️</button>
-</nav>
+<div class="container hidden" id="roomDetailView">
+  <h2>Room Detail</h2>
+  <div id="roomDetailInfo"></div>
+
+  <h3>Income/Expense</h3>
+  <table>
+    <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
+    <tbody id="transactionList"></tbody>
+  </table>
+
+  <h3>Add Transaction</h3>
+  <input id="txDate" type="date" />
+  <select id="txType">
+    <option value="income">Income</option>
+    <option value="expense">Expense</option>
+  </select>
+  <input id="txDesc" placeholder="Description" />
+  <input id="txAmount" type="number" placeholder="Amount" />
+  <button class="button" onclick="addTransaction()">Add</button><br><br>
+  <button class="button" onclick="backToList()">Back to List</button>
+</div>
+
+<div class="container hidden" id="summaryView">
+  <h2>Summary Report</h2>
+  <div id="summaryTable"></div>
+</div>
 
 <script>
-  const user = "admin", pass = "0000";
-  let logoutTimer;
-
-  function login() {
-    const u = document.getElementById("username").value;
-    const p = document.getElementById("password").value;
-    if (u === user && p === pass) {
-      document.getElementById("loginScreen").classList.add("hidden");
-      document.getElementById("roomListScreen").classList.remove("hidden");
-      document.getElementById("mainNav").classList.remove("hidden");
-      autoBackup();
-      resetLogoutTimer();
-    } else {
-      alert("Incorrect username or password");
-    }
+const rooms = [
+  {
+    id: "101",
+    project: "SkyView",
+    number: "101",
+    rent: 8000,
+    transactions: [
+      { date: "2024-01-01", type: "income", desc: "Jan Rent", amount: 8000 },
+      { date: "2024-01-02", type: "expense", desc: "Fix AC", amount: 1200 }
+    ]
+  },
+  {
+    id: "102",
+    project: "SkyView",
+    number: "102",
+    rent: 8500,
+    transactions: [
+      { date: "2024-01-01", type: "income", desc: "Jan Rent", amount: 8500 }
+    ]
   }
+];
 
-  function showScreen(id) {
-    ["roomListScreen"].forEach(s => {
-      document.getElementById(s).classList.add("hidden");
-    });
-    document.getElementById(id).classList.remove("hidden");
+let currentRoom = null;
+
+function renderRoomList() {
+  const container = document.getElementById("roomList");
+  container.innerHTML = "";
+  rooms.forEach(room => {
+    const div = document.createElement("div");
+    div.className = "room-card";
+    div.innerHTML = `<strong>${room.project}</strong><br>Room: ${room.number}<br>Rent: ${room.rent} THB<br>
+                     <button class='button' onclick="viewRoom('${room.id}')">View Details</button>`;
+    container.appendChild(div);
+  });
+}
+
+function viewRoom(id) {
+  currentRoom = rooms.find(r => r.id === id);
+  document.getElementById("roomListView").classList.add("hidden");
+  document.getElementById("roomDetailView").classList.remove("hidden");
+
+  document.getElementById("roomDetailInfo").innerHTML =
+    `<strong>Project:</strong> ${currentRoom.project}<br>
+     <strong>Room:</strong> ${currentRoom.number}<br>
+     <strong>Rent:</strong> ${currentRoom.rent} THB`;
+
+  renderTransactions();
+}
+
+function renderTransactions() {
+  const tbody = document.getElementById("transactionList");
+  tbody.innerHTML = "";
+  currentRoom.transactions.forEach(tx => {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${tx.date}</td><td>${tx.type}</td><td>${tx.desc}</td><td>${tx.amount}</td>`;
+    tbody.appendChild(row);
+  });
+}
+
+function addTransaction() {
+  const date = document.getElementById("txDate").value;
+  const type = document.getElementById("txType").value;
+  const desc = document.getElementById("txDesc").value;
+  const amount = parseFloat(document.getElementById("txAmount").value);
+  if (!date || !desc || isNaN(amount)) {
+    alert("Please complete all fields.");
+    return;
   }
+  currentRoom.transactions.push({ date, type, desc, amount });
+  renderTransactions();
+  document.getElementById("txDate").value = "";
+  document.getElementById("txDesc").value = "";
+  document.getElementById("txAmount").value = "";
+}
 
-  function autoBackup() {
-    const data = localStorage.getItem("rooms") || "[]";
-    let index = parseInt(localStorage.getItem("backupIndex") || "0");
-    localStorage.setItem("backup" + index, data);
-    index = (index + 1) % 4;
-    localStorage.setItem("backupIndex", index);
-  }
+function backToList() {
+  document.getElementById("roomDetailView").classList.add("hidden");
+  document.getElementById("roomListView").classList.remove("hidden");
+  renderRoomList();
+}
 
-  function resetLogoutTimer() {
-    clearTimeout(logoutTimer);
-    logoutTimer = setTimeout(() => {
-      alert("Session expired. Logging out.");
-      location.reload();
-    }, 5 * 60 * 1000);
-  }
-
-  ["click", "mousemove", "keydown", "touchstart"].forEach(evt =>
-    document.addEventListener(evt, resetLogoutTimer, true)
-  );
-
-  function toggleLanguage() {
-    alert("Language toggle will be available in full version.");
-  }
+renderRoomList();
 </script>
+
 </body>
 </html>
