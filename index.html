@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rental Manager AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      margin: 0;
+      background: linear-gradient(to bottom right, #f0f4f8, #ffffff);
+      color: #333;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: #00bfa5;
+      color: white;
+    }
+    .button {
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0.3rem;
+    }
+    .container {
+      padding: 1rem;
+    }
+    .hidden {
+      display: none;
+    }
+    .card {
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      color: white;
+    }
+    .status-red { background-color: #e74c3c; }
+    .status-yellow { background-color: #f1c40f; }
+    .status-green { background-color: #2ecc71; }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      background: #e0f7fa;
+      border-top: 1px solid #ccc;
+    }
+    nav button {
+      flex: 1;
+      padding: 1rem 0;
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: #00796b;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.3rem 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div id="title">Rental Manager AI</div>
+  <button class="button" onclick="toggleLanguage()" id="langBtn">TH</button>
+</header>
+
+<div class="container" id="loginScreen">
+  <h2 id="loginTitle">Login</h2>
+  <input type="text" id="username" placeholder="Username"/>
+  <input type="password" id="password" placeholder="Password"/>
+  <button class="button" onclick="login()">Login</button>
+</div>
+
+<div class="container hidden" id="roomListScreen">
+  <h2 id="roomListTitle">All Rooms</h2>
+  <div id="roomList"></div>
+</div>
+
+<div class="container hidden" id="addRoomScreen">
+  <h2 id="addRoomTitle">Add Room</h2>
+  <input id="roomNumber" placeholder="Room Number"/>
+  <input id="houseNumber" placeholder="House Number"/>
+  <input type="date" id="startDate"/>
+  <input type="date" id="endDate"/>
+  <input type="number" id="monthlyRent" placeholder="Monthly Rent"/>
+  <select id="dueDay">
+    <option value="1">1</option>
+    <option value="15">15</option>
+  </select>
+  <input type="number" id="deposit" placeholder="Deposit"/>
+  <button class="button" onclick="saveRoom()">Save Room</button>
+</div>
+
+<div class="container hidden" id="summaryScreen">
+  <h2 id="summaryTitle">Summary</h2>
+  <div id="summaryTable"></div>
+</div>
+
+<div class="container hidden" id="settingsScreen">
+  <h2 id="settingsTitle">Settings</h2>
+  <button class="button" onclick="clearData()">Clear Income/Expense</button>
+  <button class="button" onclick="exportData()">Export Data</button>
+  <input type="file" onchange="importData(event)"/>
+  <button class="button" onclick="logout()">Logout</button>
+  <p>Data is stored locally in your device (LocalStorage).</p>
+</div>
+
+<nav class="hidden" id="mainNav">
+  <button onclick="showScreen('roomListScreen')">Rooms</button>
+  <button onclick="showScreen('addRoomScreen')">Add</button>
+  <button onclick="showScreen('summaryScreen')">Summary</button>
+  <button onclick="showScreen('settingsScreen')">Settings</button>
+</nav>
+
+<script>
+  const user = "admin", pass = "0000";
+  let lang = "EN";
+  const translations = {
+    EN: { login: "Login", roomList: "All Rooms", addRoom: "Add Room", summary: "Summary", settings: "Settings" },
+    TH: { login: "เข้าสู่ระบบ", roomList: "ห้องทั้งหมด", addRoom: "เพิ่มห้อง", summary: "สรุป", settings: "ตั้งค่า" }
+  };
+
+  function toggleLanguage() {
+    lang = lang === "EN" ? "TH" : "EN";
+    document.getElementById("langBtn").innerText = lang === "EN" ? "TH" : "EN";
+    document.getElementById("loginTitle").innerText = translations[lang].login;
+    document.getElementById("roomListTitle").innerText = translations[lang].roomList;
+    document.getElementById("addRoomTitle").innerText = translations[lang].addRoom;
+    document.getElementById("summaryTitle").innerText = translations[lang].summary;
+    document.getElementById("settingsTitle").innerText = translations[lang].settings;
+  }
+
+  function login() {
+    if (document.getElementById("username").value === user && document.getElementById("password").value === pass) {
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("roomListScreen").classList.remove("hidden");
+      document.getElementById("mainNav").classList.remove("hidden");
+      renderRooms();
+    } else {
+      alert("Login failed");
+    }
+  }
+
+  function logout() {
+    location.reload();
+  }
+
+  function showScreen(id) {
+    ["roomListScreen","addRoomScreen","summaryScreen","settingsScreen"].forEach(s => {
+      document.getElementById(s).classList.add("hidden");
+    });
+    document.getElementById(id).classList.remove("hidden");
+    if (id === "roomListScreen") renderRooms();
+    if (id === "summaryScreen") renderSummary();
+  }
+
+  function saveRoom() {
+    const room = {
+      number: document.getElementById("roomNumber").value,
+      house: document.getElementById("houseNumber").value,
+      start: document.getElementById("startDate").value,
+      end: document.getElementById("endDate").value,
+      rent: parseFloat(document.getElementById("monthlyRent").value),
+      due: document.getElementById("dueDay").value,
+      deposit: parseFloat(document.getElementById("deposit").value),
+      income: 0, expense: 0, status: "green"
+    };
+    const data = JSON.parse(localStorage.getItem("rooms") || "[]");
+    data.push(room);
+    localStorage.setItem("rooms", JSON.stringify(data));
+    alert("Room added");
+    showScreen('roomListScreen');
+  }
+
+  function renderRooms() {
+    const list = document.getElementById("roomList");
+    list.innerHTML = "";
+    const data = JSON.parse(localStorage.getItem("rooms") || "[]");
+    const sortColor = { red: 0, yellow: 1, green: 2 };
+    data.sort((a,b) => sortColor[a.status]-sortColor[b.status])
+        .forEach(r => {
+          const div = document.createElement("div");
+          div.className = `card status-${r.status}`;
+          div.innerText = r.number + " | " + r.house;
+          list.appendChild(div);
+        });
+  }
+
+  function renderSummary() {
+    const table = document.getElementById("summaryTable");
+    const data = JSON.parse(localStorage.getItem("rooms") || "[]");
+    let html = '<table border="1" cellpadding="5" style="width:100%;text-align:left;"><tr><th>Room</th><th>Income</th><th>Expense</th><th>Net</th></tr>';
+    let totalIn = 0, totalOut = 0;
+    data.forEach(r => {
+      totalIn += r.income;
+      totalOut += r.expense;
+      html += `<tr><td>${r.number}</td><td>${r.income}</td><td>${r.expense}</td><td>${r.income - r.expense}</td></tr>`;
+    });
+    html += `<tr><th>Total</th><th>${totalIn}</th><th>${totalOut}</th><th>${totalIn - totalOut}</th></tr></table>`;
+    table.innerHTML = html;
+  }
+
+  function clearData() {
+    const data = JSON.parse(localStorage.getItem("rooms") || "[]").map(r => {
+      r.income = 0; r.expense = 0;
+      return r;
+    });
+    localStorage.setItem("rooms", JSON.stringify(data));
+    alert("Data cleared");
+    renderSummary();
+  }
+
+  function exportData() {
+    const data = localStorage.getItem("rooms");
+    const blob = new Blob([data], { type: "application/json" });
+    const file = new File([blob], "rooms.json", { type: "application/json" });
+    if (navigator.share) {
+      navigator.share({ files: [file], title: "Rental Data", text: "Backup file" });
+    } else {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "rooms.json";
+      a.click();
+    }
+  }
+
+  function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      localStorage.setItem("rooms", reader.result);
+      alert("Data imported");
+      renderRooms();
+    };
+    reader.readAsText(file);
+  }
+</script>
+</body>
+</html>
