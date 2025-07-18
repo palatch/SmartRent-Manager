@@ -1,10 +1,259 @@
 
-<!-- SmartRent Manager with login persistence (auto-login using localStorage) -->
-<!-- This version includes:
-  - login screen (admin / 0000)
-  - auto-login if previously authenticated
-  - room listing with status colors
-  - room detail + income/expense
-  - summary chart
-  - language switch (EN/TH/中文)
--->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartRent Manager</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Prompt&display=swap">
+  <style>
+    body { font-family: 'Prompt', sans-serif; margin: 0; padding: 0; background: #eef1f5; }
+    header { background: #0077cc; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .lang-switch { background: white; color: #0077cc; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+    .container { padding: 1rem; }
+    .hidden { display: none; }
+    .room-card { background: white; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .red { border-left: 8px solid red; }
+    .yellow { border-left: 8px solid orange; }
+    .green { border-left: 8px solid green; }
+    .btn { background: #0077cc; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 5px; }
+    input, select { width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 8px; border: 1px solid #ccc; }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body onload="initApp()">
+
+<header>
+  <div id="appTitle">SmartRent Manager</div>
+  <div>
+    <select class="lang-switch" onchange="setLang(this.value)">
+      <option value="en">EN</option>
+      <option value="th">TH</option>
+      <option value="zh">中文</option>
+    </select>
+  </div>
+</header>
+
+<div class="container" id="loginScreen">
+  <h2>Login</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <label><input type="checkbox" id="rememberMe"> Remember me</label><br>
+  <button class="btn" onclick="login()">Login</button>
+</div>
+
+<div class="container hidden" id="mainApp">
+  <div class="grid">
+    <button class="btn" onclick="showPage('rooms')">All Rooms</button>
+    <button class="btn" onclick="showPage('add')">Add Room</button>
+    <button class="btn" onclick="showPage('summary')">Summary</button>
+    <button class="btn" onclick="showPage('settings')">Settings</button>
+  </div>
+
+  <div id="roomsPage" class="hidden">
+    <h3>All Rooms</h3>
+    <div id="roomList"></div>
+  </div>
+
+  <div id="addPage" class="hidden">
+    <h3>Add Room</h3>
+    <input id="roomNum" placeholder="Room Number">
+    <input id="houseNum" placeholder="House Number">
+    <input id="startDate" type="date">
+    <input id="endDate" type="date">
+    <input id="rent" type="number" placeholder="Monthly Rent">
+    <input id="dueDay" type="number" placeholder="Due Day">
+    <input id="deposit" type="number" placeholder="Security Deposit">
+    <button class="btn" onclick="addRoom()">Save Room</button>
+  </div>
+
+  <div id="summaryPage" class="hidden">
+    <h3>Summary</h3>
+    <table><thead><tr><th>Room</th><th>Income</th><th>Expense</th><th>Net</th></tr></thead><tbody id="summaryBody"></tbody></table>
+  </div>
+
+  <div id="settingsPage" class="hidden">
+    <h3>Settings</h3>
+    <button class="btn" onclick="clearData()">Clear Data</button>
+    <button class="btn" onclick="exportData()">Export Data</button>
+    <input type="file" onchange="importData(event)">
+    <button class="btn" onclick="logout()">Logout</button>
+    <p><small>Data stored locally in your device (LocalStorage).</small></p>
+  </div>
+</div>
+
+<script>
+let rooms = [];
+
+function initApp() {
+  if (localStorage.getItem("remember") === "true" && localStorage.getItem("loggedIn") === "true") {
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("mainApp").classList.remove("hidden");
+    loadRooms(); renderRooms();
+  }
+}
+
+function login() {
+  const user = document.getElementById("username").value;
+  const pass = document.getElementById("password").value;
+  const remember = document.getElementById("rememberMe").checked;
+  if (user === "admin" && pass === "0000") {
+    if (remember) localStorage.setItem("remember", "true");
+    localStorage.setItem("loggedIn", "true");
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("mainApp").classList.remove("hidden");
+    loadRooms(); renderRooms();
+  } else {
+    alert("Incorrect login");
+  }
+}
+
+function logout() {
+  localStorage.removeItem("loggedIn");
+  location.reload();
+}
+
+function showPage(page) {
+  ["roomsPage", "addPage", "summaryPage", "settingsPage"].forEach(id => {
+    document.getElementById(id).classList.add("hidden");
+  });
+  document.getElementById(page + "Page").classList.remove("hidden");
+  if (page === "summary") renderSummary();
+}
+
+function addRoom() {
+  const room = {
+    roomNum: document.getElementById("roomNum").value,
+    houseNum: document.getElementById("houseNum").value,
+    start: document.getElementById("startDate").value,
+    end: document.getElementById("endDate").value,
+    rent: document.getElementById("rent").value,
+    due: document.getElementById("dueDay").value,
+    deposit: document.getElementById("deposit").value
+  };
+  rooms.push(room);
+  saveRooms(); renderRooms(); alert("Room added");
+}
+
+function renderRooms() {
+  const list = document.getElementById("roomList");
+  list.innerHTML = "";
+  rooms.forEach(r => {
+    const status = getStatus(r);
+    const card = document.createElement("div");
+    card.className = `room-card ${status}`;
+    card.innerHTML = `<b>Room ${r.roomNum}</b><br>Rent: ${r.rent}<br>Due: ${r.due}`;
+    list.appendChild(card);
+  });
+}
+
+function getStatus(r) {
+  const today = new Date();
+  const end = new Date(r.end);
+  const monthsLeft = (end - today) / (1000 * 60 * 60 * 24 * 30);
+  if (monthsLeft < 3) return "red";
+  return "green";
+}
+
+function renderSummary() {
+  const body = document.getElementById("summaryBody");
+  body.innerHTML = "";
+  rooms.forEach(r => {
+    body.innerHTML += `<tr><td>${r.roomNum}</td><td>${r.rent}</td><td>0</td><td>${r.rent}</td></tr>`;
+  });
+}
+
+function saveRooms() {
+  localStorage.setItem("rooms", JSON.stringify(rooms));
+}
+
+function loadRooms() {
+  const data = localStorage.getItem("rooms");
+  if (data) rooms = JSON.parse(data);
+}
+
+function clearData() {
+  rooms.forEach(r => r.expenses = []);
+  saveRooms();
+  alert("Data cleared");
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(rooms)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "rooms.json";
+  a.click();
+}
+
+function importData(event) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    rooms = JSON.parse(e.target.result);
+    saveRooms();
+    renderRooms();
+    alert("Imported");
+  };
+  reader.readAsText(event.target.files[0]);
+}
+
+function setLang(lang) {
+  alert("Language switch not yet implemented. Placeholder only.");
+}
+</script>
+
+</body>
+</html>
+
+<!-- Added section: Income/Expense Entry -->
+<div id="txPage" class="hidden">
+  <h3>Room Transactions</h3>
+  <div id="txRoomHeader"></div>
+  <table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead>
+  <tbody id="txList"></tbody></table>
+  <h4>Add Transaction</h4>
+  <input id="txDate" type="date">
+  <select id="txType"><option value="income">Income</option><option value="expense">Expense</option></select>
+  <input id="txDesc" placeholder="Description">
+  <input id="txAmount" type="number" placeholder="Amount">
+  <button class="btn" onclick="addTransaction()">Add</button>
+  <button class="btn" onclick="backToRooms()">Back</button>
+</div>
+<script>
+let currentRoomIndex = null;
+function openTransactionPage(index) {
+  currentRoomIndex = index;
+  showPage('tx');
+  const r = rooms[index];
+  document.getElementById('txRoomHeader').innerText = `Room ${r.roomNum}`;
+  if (!r.transactions) r.transactions = [];
+  renderTxList();
+}
+function renderTxList() {
+  const body = document.getElementById("txList");
+  body.innerHTML = "";
+  const list = rooms[currentRoomIndex].transactions || [];
+  list.forEach(tx => {
+    body.innerHTML += `<tr><td>${tx.date}</td><td>${tx.type}</td><td>${tx.desc}</td><td>${tx.amount}</td></tr>`;
+  });
+}
+function addTransaction() {
+  const d = document.getElementById("txDate").value;
+  const t = document.getElementById("txType").value;
+  const desc = document.getElementById("txDesc").value;
+  const amt = parseFloat(document.getElementById("txAmount").value);
+  if (!d || !desc || isNaN(amt)) return alert("Fill all fields");
+  rooms[currentRoomIndex].transactions.push({date:d,type:t,desc,amount:amt});
+  saveRooms();
+  renderTxList();
+}
+function backToRooms() {
+  showPage('rooms');
+}
+</script>
