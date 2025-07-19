@@ -308,9 +308,15 @@
         <div id="settingsPage" class="page container">
             <h2 data-translate="settings">ตั้งค่า</h2>
             <div class="card">
+                <div class="form-group">
+                    <label data-translate="systemName">ชื่อระบบ</label>
+                    <input type="text" id="systemName" value="ระบบจัดการห้องเช่า">
+                    <button class="btn" onclick="updateSystemName()" data-translate="update">อัปเดต</button>
+                </div>
                 
+                <hr style="margin: 20px 0;">
                 
-                
+                <button class="btn" onclick="clearData()" data-translate="clearData">ล้างข้อมูล</button>
                 <button class="btn" onclick="exportData()" data-translate="export">ส่งออกข้อมูล</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData()">
                 <button class="btn" onclick="document.getElementById('importFile').click()" data-translate="import">นำเข้าข้อมูล</button>
@@ -674,17 +680,6 @@
                     </div>
                     <div class="form-group">
                         <strong>${translations[currentLang].deposit}:</strong> ฿${room.deposit.toLocaleString()}
-                    <div class="form-group">
-                        <label>รายรับ (บาท)</label>
-                        <input type="number" id="incomeInput" value="${room.income || 0}">
-                    </div>
-                    <div class="form-group">
-                        <label>รายจ่าย (บาท)</label>
-                        <input type="number" id="expenseInput" value="${room.expense || 0}">
-                    </div>
-                    <div style="margin-top: 20px;">
-                        <button class="btn btn-success" onclick="saveIncomeExpense(${room.id})">บันทึกรายรับ-รายจ่าย</button>
-                    </div>
                     </div>
                     <div style="margin-top: 30px;">
                         <button class="btn btn-danger" onclick="deleteRoom(${room.id})">${translations[currentLang].delete}</button>
@@ -702,8 +697,8 @@
             let totalExpense = 0;
 
             const summaryData = rooms.map(room => {
-                const income = room.income || 0;
-                const expense = room.expense || 0;
+                const income = room.monthlyRent * 12; // Simplified calculation
+                const expense = 0; // You can add expense tracking
                 const net = income - expense;
                 
                 totalIncome += income;
@@ -935,15 +930,6 @@
                 showPage('roomsPage');
             }
         });
-    
-function saveIncomeExpense(id) {
-    const room = rooms.find(r => r.id === id);
-    room.income = parseInt(document.getElementById('incomeInput').value) || 0;
-    room.expense = parseInt(document.getElementById('expenseInput').value) || 0;
-    saveRooms();
-    showRoomDetail(id);
-}
-
-</script>
+    </script>
 </body>
 </html>
