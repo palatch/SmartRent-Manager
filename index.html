@@ -1,238 +1,357 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartRent AI Manager</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>SmartRent Manager</title>
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43);
-      color: #fff;
-      min-height: 100vh;
-      display: flex; justify-content: center; align-items: center;
-      padding: 20px;
-    }
-    .device {
-      width:360px; max-width:100%; height:720px;
-      background:#000; border-radius:40px; box-shadow:0 0 20px rgba(0,0,0,0.5);
-      overflow:hidden; position:relative;
-    }
-    .screen {
-      width:100%; height:100%;
-      background:#1a1a1a; display:flex; flex-direction:column;
-      padding:20px;
-    }
-    /* Login Overlay */
-    #loginOverlay {
-      position:absolute; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.85); z-index:50;
-      display:flex; justify-content:center; align-items:center;
-    }
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f4; }
+    #app { display: flex; flex-direction: column; height: 100%; }
+
+    /* Pages */
+    .page { display: none; flex: 1; overflow: auto; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* Login Page */
+    #loginPage { justify-content: center; align-items: center; background: linear-gradient(135deg, #0f2027, #203a43); }
     #loginBox {
-      background:#222; padding:24px; border-radius:16px;
-      width:80%; box-shadow:0 4px 12px rgba(0,0,0,0.7);
+      background: #222; padding: 24px; border-radius: 12px; width: 90%; max-width: 320px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
     }
-    #loginBox h2 {
-      margin-bottom:16px; font-size:24px; text-align:center;
-    }
-    .form-group { margin-bottom:12px; }
-    .form-group label { display:block; margin-bottom:4px; font-size:14px; }
-    .form-group input {
-      width:100%; padding:8px; border:none; border-radius:8px;
-      background:rgba(255,255,255,0.1); color:#fff;
-    }
+    #loginBox h2 { color: #fff; text-align: center; margin-bottom: 16px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; color: #ddd; margin-bottom: 4px; }
+    .form-group input { width: 100%; padding: 8px; border: none; border-radius: 6px; }
     #loginBtn {
-      width:100%; padding:12px; border:none; border-radius:8px;
-      background:linear-gradient(90deg,#00c6ff,#0072ff);
-      color:#fff; font-size:16px; cursor:pointer;
-      transition:transform 0.1s;
+      width: 100%; padding: 12px; margin-top: 8px; border: none; border-radius: 6px;
+      background: #0072ff; color: #fff; font-size: 16px; cursor: pointer;
     }
-    #loginBtn:active { transform:scale(0.98); }
-    /* Page common */
-    .page { display:none; flex:1; overflow:hidden; }
-    .page.active { display:flex; flex-direction:column; }
+    #programInfoBtn {
+      width: 100%; padding: 10px; margin-top: 6px; border: none; border-radius: 6px;
+      background: #4caf50; color: #fff; font-size: 14px; cursor: pointer;
+    }
+    #programInfo { display: none; margin-top: 12px; color: #fff; font-size: 14px; }
+
     /* Header */
     .header {
-      position:relative; text-align:center; margin-bottom:20px;
+      background: #0072ff; color: #fff; padding: 16px; text-align: center;
+      font-size: 20px; font-weight: bold;
     }
-    .header .label {
-      font-size:12px; letter-spacing:1px; color:#888; text-transform:uppercase;
+
+    /* Content area */
+    .content { flex: 1; padding: 16px; overflow: auto; }
+
+    /* Rooms List */
+    #roomsList { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 12px; }
+    .room-card {
+      background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;
     }
-    .header h1 { font-size:28px; margin-top:4px; }
-    .add-btn {
-      position:absolute; right:0; top:0; width:36px; height:36px;
-      background:linear-gradient(135deg,#00c6ff,#0072ff);
-      border-radius:50%; display:flex; justify-content:center; align-items:center;
-      cursor:pointer;
+    .room-card:hover { background: #e0f7fa; }
+    .room-number { font-size: 18px; font-weight: bold; color: #0072ff; }
+    .room-project { font-size: 14px; color: #555; margin-top: 4px; }
+
+    /* Form Card */
+    .form-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .form-card .form-group input,
+    .form-card .form-group select {
+      width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;
     }
-    .add-btn:before { content:'+'; font-size:24px; }
-    /* Cards container */
-    .cards {
-      flex:1; overflow-y:auto; padding-right:4px;
+
+    /* Entries */
+    .entries { margin-top: 12px; }
+    .entries h3 { margin-bottom: 8px; color: #0072ff; }
+    .entry-list { list-style: none; padding: 0; }
+    .entry-item {
+      background: #fafafa; margin-bottom: 6px; padding: 8px; border-radius: 4px;
+      display: flex; justify-content: space-between; font-size: 14px; border: 1px solid #ddd;
     }
-    .card {
-      display:flex; justify-content:space-between; flex-direction:column;
-      padding:16px; border-radius:16px; margin-bottom:16px; color:#fff;
+
+    /* Buttons */
+    .btn { display: inline-block; padding: 10px 16px; margin: 6px 4px 0 0;
+      border: none; border-radius: 6px; background: #0072ff; color: #fff; cursor: pointer;
     }
-    .card.red { background:linear-gradient(135deg,#ff5f6d,#c43a30); }
-    .card.yellow { background:linear-gradient(135deg,#fbc531,#e1b12c); }
-    .card.green { background:linear-gradient(135deg,#34e89e,#0f3443); }
-    .card.dark { background:rgba(255,255,255,0.05); }
-    .card-title { font-size:32px; font-weight:bold; }
-    .card-status { font-size:16px; margin-top:4px; }
-    .card-info {
-      display:flex; justify-content:space-between; align-items:flex-end;
-      margin-top:12px;
+    .btn.secondary { background: #666; }
+    .btn.danger { background: #d32f2f; }
+
+    /* Summary Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 8px; border: 1px solid #ccc; text-align: center; font-size: 14px; }
+    th { background: #e3f2fd; }
+
+    /* Settings */
+    #settingsContent button { margin-bottom: 12px; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .header { font-size: 18px; }
+      .room-number { font-size: 16px; }
     }
-    .card-info .rent { font-size:14px; opacity:0.8; }
-    .card-info .diff { font-size:18px; }
-    /* Footer */
-    .footer {
-      display:flex; gap:12px; margin-top:10px;
-    }
-    .footer .btn {
-      flex:1; padding:16px; border:none; border-radius:12px;
-      font-size:16px; font-weight:bold; color:#fff; cursor:pointer;
-      background:linear-gradient(90deg,#9d50bb,#6e48aa);
-    }
-    .footer .settings { background:linear-gradient(90deg,#0072ff,#00c6ff); }
-    /* Scroll hide */
-    .cards::-webkit-scrollbar { display:none; }
-    .cards { -ms-overflow-style:none; scrollbar-width:none; }
-    /* Forms */
-    .content-card {
-      background:rgba(255,255,255,0.1); border-radius:16px;
-      padding:16px; margin-bottom:16px; overflow-y:auto;
-    }
-    /* Buttons ripple */
-    .btn-ripple {
-      position:relative; overflow:hidden;
-    }
-    .btn-ripple:active::after {
-      content:''; position:absolute;
-      width:100px; height:100px; background:rgba(255,255,255,0.3);
-      border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
-      animation:ripple 0.6s linear;
-    }
-    @keyframes ripple { to{transform:translate(-50%,-50%) scale(4); opacity:0;} }
   </style>
 </head>
 <body>
-  <div class="device">
-    <div id="loginOverlay">
+  <div id="app">
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
       <div id="loginBox">
-        <h2>Login</h2>
+        <h2>SmartRent Manager</h2>
         <form id="loginForm">
-          <div class="form-group"><label>Username</label><input type="text" id="username" required/></div>
-          <div class="form-group"><label>Password</label><input type="password" id="password" required/></div>
-          <button type="submit" id="loginBtn">Login</button>
+          <div class="form-group"><label>ชื่อผู้ใช้</label><input type="text" id="username" required></div>
+          <div class="form-group"><label>รหัสผ่าน</label><input type="password" id="password" required></div>
+          <button type="submit" id="loginBtn">เข้าสู่ระบบ</button>
+          <button type="button" id="programInfoBtn">ข้อมูลโปรแกรม</button>
+          <div id="programInfo">
+            <ul>
+              <li>จัดการข้อมูลห้องพัก</li>
+              <li>บันทึกรายรับ–รายจ่าย</li>
+              <li>สรุปยอดรายรับ–รายจ่าย</li>
+              <li>ส่งออก/นำเข้าข้อมูล CSV</li>
+            </ul>
+          </div>
         </form>
       </div>
     </div>
-    <div class="screen">
-      <!-- All Rooms Page -->
-      <div id="roomsPage" class="page active">
-        <div class="header">
-          <div class="label">Dashboard</div>
-          <h1>All Rooms</h1>
-          <div class="add-btn" onclick="showPage('addRoomPage')"></div>
-        </div>
-        <div class="cards">
-          <div class="card red">
-            <div><div class="card-title">101</div><div class="card-status">Expiring soon</div></div>
-            <div class="card-info"><div class="rent">Rent: $1,500</div><div class="diff">- $500</div></div>
-          </div>
-          <div class="card yellow">
-            <div><div class="card-title">102</div><div class="card-status">Overdue</div></div>
-            <div class="card-info"><div class="rent">Rent: $1,700</div><div class="diff">- $200</div></div>
-          </div>
-          <div class="card green">
-            <div><div class="card-title">103</div><div class="card-status">Occupied</div></div>
-            <div class="card-info"><div class="rent">Rent: $1,200</div><div class="diff">+ $0</div></div>
-          </div>
-          <div class="card dark">
-            <div><div class="card-title">104</div><div class="card-status">Vacant</div></div>
-            <div class="card-info"><div class="rent">Rent: —</div><div class="diff">+ $0</div></div>
-          </div>
-        </div>
-        <div class="footer">
-          <button class="btn-ripple btn">Summary</button>
-          <button class="btn-ripple btn settings" onclick="showPage('settingsPage')">Settings</button>
-        </div>
+    <!-- Rooms Page -->
+    <div id="roomsPage" class="page">
+      <div class="header">SmartRent Manager</div>
+      <div class="content">
+        <button class="btn" onclick="showPage('addRoomPage')">เพิ่มห้อง</button>
+        <button class="btn" onclick="showPage('summaryPage')">สรุปยอด</button>
+        <button class="btn" onclick="showPage('settingsPage')">ตั้งค่า</button>
+        <div id="roomsList"></div>
       </div>
-      <!-- Add Room Page -->
-      <div id="addRoomPage" class="page">
-        <div class="header"><div class="label">Add Room</div></div>
-        <div class="content-card">
-          <form id="addRoomForm">
-            <div class="form-group"><label>Project</label><input type="text" id="project"/></div>
-            <div class="form-group"><label>Room Number</label><input type="text" id="roomNumber"/></div>
-            <div class="form-group"><label>Start Date</label><input type="date" id="startDate"/></div>
-            <div class="form-group"><label>End Date</label><input type="date" id="endDate"/></div>
-            <div class="form-group"><label>Monthly Rent</label><input type="number" id="monthlyRent"/></div>
-            <div class="form-group"><label>Due Date (day)</label><input type="number" id="dueDate"/></div>
-            <div class="form-group"><label>Deposit</label><input type="number" id="deposit"/></div>
+    </div>
+    <!-- Add/Edit Room Page -->
+    <div id="addRoomPage" class="page">
+      <div class="header">เพิ่ม / แก้ไขห้อง</div>
+      <div class="content">
+        <div class="form-card">
+          <form id="addEditRoomForm" onsubmit="return false;">
+            <input type="hidden" id="roomId">
+            <div class="form-group"><label>โครงการ</label><input type="text" id="project" required></div>
+            <div class="form-group"><label>เลขห้อง</label><input type="text" id="roomNumber" required></div>
+            <div class="form-group"><label>วันที่เริ่มสัญญา</label><input type="date" id="startDate"></div>
+            <div class="form-group"><label>วันที่สิ้นสุดสัญญา</label><input type="date" id="endDate"></div>
+            <div class="form-group"><label>ค่าเช่า (บาท)</label><input type="number" id="monthlyRent" required></div>
+            <div class="form-group"><label>วันครบกำหนด (เลขวัน)</label><input type="number" id="dueDate" required></div>
+            <div class="form-group"><label>เงินประกัน (บาท)</label><input type="number" id="deposit" required></div>
           </form>
-        </div>
-        <div class="footer">
-          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
-          <button class="btn-ripple btn" onclick="showPage('roomsPage')">Save</button>
-        </div>
-      </div>
-      <!-- Room Detail Page -->
-      <div id="roomDetailPage" class="page">
-        <div class="header"><div class="label">Room Details</div></div>
-        <div class="content-card">
-          <div id="roomInfo">Room info will appear here</div>
-          <h3>Add Entry</h3>
-          <form id="entryForm">
-            <div class="form-group"><label>Type</label><select id="entryType"><option>Income</option><option>Expense</option></select></div>
-            <div class="form-group"><label>Description</label><input type="text" id="entryDescription"/></div>
-            <div class="form-group"><label>Amount</label><input type="number" id="entryAmount"/></div>
-          </form>
-        </div>
-        <div class="footer">
-          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
-          <button class="btn-ripple btn" onclick="showPage('roomsPage')">Add</button>
-        </div>
-      </div>
-      <!-- Summary Page -->
-      <div id="summaryPage" class="page">
-        <div class="header"><div class="label">Summary</div></div>
-        <div class="content-card" id="summaryContent">Summary data here</div>
-        <div class="footer">
-          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
-        </div>
-      </div>
-      <!-- Settings Page -->
-      <div id="settingsPage" class="page">
-        <div class="header"><div class="label">Settings</div></div>
-        <div class="content-card">
-          Settings options here
-        </div>
-        <div class="footer">
-          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
+          <button class="btn" onclick="saveRoom()">บันทึก</button>
+          <button class="btn secondary" onclick="showPage('roomsPage')">ยกเลิก</button>
         </div>
       </div>
     </div>
+    <!-- Detail Page -->
+    <div id="detailPage" class="page">
+      <div class="header">รายละเอียดห้อง</div>
+      <div class="content">
+        <div class="form-card">
+          <form id="detailRoomForm" onsubmit="return false;">
+            <div class="form-group"><label>โครงการ</label><input type="text" id="d_project" required></div>
+            <div class="form-group"><label>เลขห้อง</label><input type="text" id="d_roomNumber" required></div>
+            <div class="form-group"><label>วันที่เริ่มสัญญา</label><input type="date" id="d_startDate"></div>
+            <div class="form-group"><label>วันที่สิ้นสุดสัญญา</label><input type="date" id="d_endDate"></div>
+            <div class="form-group"><label>ค่าเช่า (บาท)</label><input type="number" id="d_monthlyRent" required></div>
+            <div class="form-group"><label>วันครบกำหนด (เลขวัน)</label><input type="number" id="d_dueDate" required></div>
+            <div class="form-group"><label>เงินประกัน (บาท)</label><input type="number" id="d_deposit" required></div>
+          </form>
+          <button class="btn" onclick="updateRoom()">อัปเดต</button>
+        </div>
+        <div class="entries">
+          <h3>เพิ่มรายรับ</h3>
+          <div class="form-group"><label>หมวดรายรับ</label>
+            <select id="incomeType"><option>ค่าเช่า</option><option>ค่าปรับ</option><option>ค่าประกัน</option></select>
+          </div>
+          <div class="form-group"><label>จำนวนเงิน (บาท)</label><input type="number" id="incomeAmount"></div>
+          <button class="btn" onclick="addIncome()">เพิ่มรายรับ</button>
+          <ul id="incomeList" class="entry-list"></ul>
+          <h3>เพิ่มรายจ่าย</h3>
+          <div class="form-group"><label>รายละเอียด</label><input type="text" id="expenseDesc"></div>
+          <div class="form-group"><label>จำนวนเงิน (บาท)</label><input type="number" id="expenseAmount"></div>
+          <button class="btn" onclick="addExpense()">เพิ่มรายจ่าย</button>
+          <ul id="expenseList" class="entry-list"></ul>
+        </div>
+        <button class="btn secondary" onclick="showPage('roomsPage')">กลับ</button>
+      </div>
+    </div>
+    <!-- Summary Page -->
+    <div id="summaryPage" class="page">
+      <div class="header">สรุปยอด</div>
+      <div class="content">
+        <table id="summaryTable">
+          <thead><tr><th>เลขห้อง</th><th>ค่าเช่า</th><th>ค่าปรับ</th><th>ค่าประกัน</th><th>รายรับรวม</th><th>รายจ่ายรวม</th><th>คงเหลือ</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><th>รวมทั้งหมด</th><th id="sumRent"></th><th id="sumFine"></th><th id="sumDeposit"></th><th id="sumIncome"></th><th id="sumExpense"></th><th id="sumNet"></th></tr></tfoot>
+        </table> 
+        <button class="btn secondary" onclick="showPage('roomsPage')">กลับ</button>
+      </div>
+    </div>
+    <!-- Settings Page --> 
+    <div id="settingsPage" class="page">
+      <div class="header">ตั้งค่า</div>
+      <div class="content">
+        <button class="btn" onclick="exportCSV()">ส่งออก CSV</button>
+        <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importCSV(event)">
+        <button class="btn" onclick="document.getElementById('importFile').click()">นำเข้า CSV</button>
+      </div>
+      <button class="btn secondary" onclick="showPage('roomsPage')">กลับ</button>
+    </div>
   </div>
+
   <script>
-    // Login
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      var u = document.getElementById('username').value;
-      var p = document.getElementById('password').value;
-      if (u==='admin' && p==='0000') {
-        document.getElementById('loginOverlay').style.display='none';
-      } else alert('Invalid credentials');
-    });
+    // Data storage
+    let rooms = JSON.parse(localStorage.getItem('rooms')||'[]');
+    let entries = JSON.parse(localStorage.getItem('entries')||'{}');
+
+    function save() {
+      localStorage.setItem('rooms', JSON.stringify(rooms));
+      localStorage.setItem('entries', JSON.stringify(entries));
+    }
     // Page navigation
-    function showPage(id){
+    function showPage(id) {
       document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+      if(id==='roomsPage') loadRooms();
+      if(id==='summaryPage') renderSummary();
     }
+    // Login
+    document.getElementById('programInfoBtn').onclick = ()=> document.getElementById('programInfo').style.display='block';
+    document.getElementById('loginForm').onsubmit = e=> {
+      e.preventDefault();
+      if(document.getElementById('username').value==='admin'&&document.getElementById('password').value==='0000') showPage('roomsPage');
+      else alert('ข้อมูลเข้าสู่ระบบไม่ถูกต้อง');
+    };
+
+    // Rooms list
+    function loadRooms() {
+      const list=document.getElementById('roomsList'); list.innerHTML='';
+      rooms.forEach(r=>{
+        const card=document.createElement('div'); card.className='room-card';
+        card.innerHTML=`<div class="room-number">${r.roomNumber}</div><div class="room-project">${r.project}</div>`;
+        card.onclick=()=>openDetail(r.id);
+        list.appendChild(card);
+      });
+    }
+    // Add/edit room
+    function saveRoom() {
+      const id=document.getElementById('roomId').value||Date.now().toString();
+      const room={ id, project:document.getElementById('project').value, roomNumber:document.getElementById('roomNumber').value,
+        startDate:document.getElementById('startDate').value,endDate:document.getElementById('endDate').value,
+        monthlyRent:+document.getElementById('monthlyRent').value,dueDate:+document.getElementById('dueDate').value,
+        deposit:+document.getElementById('deposit').value };
+      const idx=rooms.findIndex(x=>x.id===id);
+      if(idx>=0) rooms[idx]=room; else { rooms.push(room); entries[id]={incomes:[],expenses:[]} }
+      save(); showPage('roomsPage');
+    }
+    document.getElementById('addEditRoomForm').onsubmit=e=>e.preventDefault();
+
+    // Open detail
+    function openDetail(id) {
+      showPage('detailPage');
+      const r=rooms.find(x=>x.id===id);
+      ['project','roomNumber','startDate','endDate','monthlyRent','dueDate','deposit'].forEach(f=>{
+        document.getElementById('d_'+f).value=r[f];
+      });
+      document.getElementById('detailRoomForm').dataset.id=id;
+      renderEntries(id);
+    }
+    function updateRoom() {
+      const id=document.getElementById('detailRoomForm').dataset.id;
+      const r=rooms.find(x=>x.id===id);
+      ['project','roomNumber','startDate','endDate','monthlyRent','dueDate','deposit'].forEach(f=>{
+        r[f]=document.getElementById('d_'+f).value;
+      });
+      save(); openDetail(id);
+    }
+    // Entries
+    function renderEntries(id) {
+      const incList=document.getElementById('incomeList'), expList=document.getElementById('expenseList');
+      incList.innerHTML=''; expList.innerHTML='';
+      (entries[id]?.incomes||[]).forEach((e,i)=>{
+        const li=document.createElement('li'); li.className='entry-item';
+        li.innerHTML=`${e.type}: ${e.amount} <button class="btn danger" onclick="deleteIncome('${id}',${i})">ลบ</button>`;
+        incList.appendChild(li);
+      });
+      (entries[id]?.expenses||[]).forEach((e,i)=>{
+        const li=document.createElement('li'); li.className='entry-item';
+        li.innerHTML=`${e.desc}: ${e.amount} <button class="btn danger" onclick="deleteExpense('${id}',${i})">ลบ</button>`;
+        expList.appendChild(li);
+      });
+    }
+    function addIncome() {
+      const id=document.getElementById('detailRoomForm').dataset.id;
+      const t=document.getElementById('incomeType').value, a=+document.getElementById('incomeAmount').value;
+      entries[id].incomes.push({type:t,amount:a}); save(); renderEntries(id);
+    }
+    function deleteIncome(id,i){ entries[id].incomes.splice(i,1); save(); renderEntries(id) }
+    function addExpense() {
+      const id=document.getElementById('detailRoomForm').dataset.id;
+      const d=document.getElementById('expenseDesc').value, a=+document.getElementById('expenseAmount').value;
+      entries[id].expenses.push({desc:d,amount:a}); save(); renderEntries(id);
+    }
+    function deleteExpense(id,i){ entries[id].expenses.splice(i,1); save(); renderEntries(id) }
+
+    // Summary
+    function renderSummary() {
+      const tbody=document.querySelector('#summaryTable tbody');
+      tbody.innerHTML='';
+      let sumRent=0,sumFine=0,sumDep=0,sumInc=0,sumExp=0;
+      rooms.forEach(r=>{ const incs=entries[r.id].incomes, exps=entries[r.id].expenses;
+        const rent=incs.filter(i=>i.type==='ค่าเช่า').reduce((a,b)=>a+b.amount,0);
+        const fine=incs.filter(i=>i.type==='ค่าปรับ').reduce((a,b)=>a+b.amount,0);
+        const dep =incs.filter(i=>i.type==='ค่าประกัน').reduce((a,b)=>a+b.amount,0);
+        const incT=rent+fine+dep, expT=exps.reduce((a,b)=>a+b.amount,0), net=incT-expT;
+        sumRent+=rent; sumFine+=fine; sumDep+=dep; sumInc+=incT; sumExp+=expT;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${r.roomNumber}</td><td>${rent}</td><td>${fine}</td><td>${dep}</td>
+          <td>${incT}</td><td>${expT}</td><td>${net}</td>`;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('sumRent').textContent=sumRent;
+      document.getElementById('sumFine').textContent=sumFine;
+      document.getElementById('sumDeposit').textContent=sumDep;
+      document.getElementById('sumIncome').textContent=sumInc;
+      document.getElementById('sumExpense').textContent=sumExp;
+      document.getElementById('sumNet').textContent=sumInc-sumExp;
+    }
+
+    // CSV Export/Import
+    function exportCSV() {
+      let csv='\uFEFFเลขห้อง,โครงการ,วันที่เริ่มสัญญา,วันที่สิ้นสุด,ค่าเช่า,วันครบกำหนด,เงินประกัน,ประเภท,หมวด,รายละเอียด,จำนวน\n';
+      rooms.forEach(r=>{
+        entries[r.id].incomes.forEach(i=>{
+          csv+=`${r.roomNumber},${r.project},${r.startDate},${r.endDate},${r.monthlyRent},${r.dueDate},${r.deposit},รายรับ,${i.type},,${i.amount}\n`;
+        });
+        entries[r.id].expenses.forEach(e=>{
+          csv+=`${r.roomNumber},${r.project},${r.startDate},${r.endDate},${r.monthlyRent},${r.dueDate},${r.deposit},รายจ่าย,,${e.desc},${e.amount}\n`;
+        });
+      });
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), link=document.createElement('a');
+      link.href=URL.createObjectURL(blob); link.download='SmartRent_Data.csv'; link.click();
+    }
+    function importCSV(e) {
+      const file=e.target.files[0]; if(!file)return;
+      const reader=new FileReader();
+      reader.onload=evt=>{
+        const lines=evt.target.result.split(/\r?\n/).slice(1);
+        rooms=[]; entries={};
+        lines.forEach(line=>{ if(!line) return;
+          const [rn,pr,sd,ed,mr,dd,dp,type,ct,desc,amt]=line.split(',');
+          let r=rooms.find(x=>x.roomNumber===rn);
+          if(!r){ r={id:Date.now()+Math.random()+'',project:pr,roomNumber:rn,startDate:sd,endDate:ed,monthlyRent:+mr,dueDate:+dd,deposit:+dp};
+            rooms.push(r); entries[r.id]={incomes:[],expenses:[]} }
+          const id=r.id;
+          if(type==='รายรับ') entries[id].incomes.push({type:ct,amount:+amt});
+          else if(type==='รายจ่าย') entries[id].expenses.push({desc:desc,amount:+amt});
+        });
+        save(); showPage('roomsPage');
+      };
+      reader.readAsText(file,'utf-8');
+    }
+
+    document.addEventListener('DOMContentLoaded',()=> showPage('loginPage'));
   </script>
 </body>
 </html>
