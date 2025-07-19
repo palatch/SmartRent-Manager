@@ -1,203 +1,935 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartRent Manager</title>
-  <style>
-    :root {
-      --primary-color: #0077cc;
-      --light-bg: #f9fbfd;
-      --text-color: #333;
-      --radius: 10px;
-    }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: var(--light-bg);
-      color: var(--text-color);
-    }
-    header, .lang {
-      background: var(--primary-color);
-      color: white;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .container {
-      max-width: 600px;
-      margin: 2rem auto;
-      background: white;
-      padding: 2rem;
-      border-radius: var(--radius);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      border-radius: var(--radius);
-      border: 1px solid #ccc;
-    }
-    button {
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #005fa3;
-    }
-    .lang select {
-      font-size: 1rem;
-      padding: 0.4rem 1rem;
-      border-radius: var(--radius);
-      border: none;
-      color: var(--primary-color);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการห้องเช่า</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body { font-family: sans-serif; padding: 1em; background: #f2f2f2; }
-    .lang { position: absolute; top: 10px; right: 10px; }
-    button, select, input { padding: 0.5em; margin: 0.5em 0; }
-  </style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .lang-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .room-card {
+            border-left: 5px solid;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .room-card.normal { border-color: #4CAF50; }
+        .room-card.overdue { border-color: #FF9800; }
+        .room-card.expiring { border-color: #F44336; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .status-normal { background: #4CAF50; }
+        .status-overdue { background: #FF9800; }
+        .status-expiring { background: #F44336; }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn-danger {
+            background: #F44336;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-success {
+            background: #4CAF50;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .navbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #f0f0f0;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .nav-text {
+            font-size: 12px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .summary-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background: #e3f2fd;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
+    <!-- Login Page -->
+    <div id="loginPage" class="page active">
+        <div class="login-form">
+            <h2 class="text-center" data-translate="login">เข้าสู่ระบบ</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label data-translate="username">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label data-translate="password">รหัสผ่าน</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe" data-translate="rememberMe">จำรหัสผ่าน</label>
+                </div>
+                <button type="submit" class="btn" style="width: 100%" data-translate="loginBtn">เข้าสู่ระบบ</button>
+            </form>
+        </div>
+    </div>
 
-<div class="container" id="loginContainer">
-  <h2 id="loginTitle">Login</h2>
-  <label id="lblUser">Username:</label>
-  <input type="text" id="username">
-  <label id="lblPass">Password:</label>
-  <input type="password" id="password">
-  <label><input type="checkbox" id="rememberMe"> Remember me</label>
-  <button onclick="login()" id="btnLogin">Login</button>
-</div>
-<div id="mainContent" style="display:none">
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <div class="header">
+            <h1 id="appTitle">ระบบจัดการห้องเช่า</h1>
+            <button class="lang-btn" onclick="toggleLanguage()">TH</button>
+        </div>
 
-  <div class="lang">
-    <select id="languageSelector" onchange="setLang(this.value)">
-      <option value="en">EN</option>
-      <option value="th">TH</option>
-      <option value="zh">中文</option>
-    </select>
-  </div>
+        <!-- All Rooms Page -->
+        <div id="roomsPage" class="page container">
+            <h2 data-translate="allRooms">ห้องทั้งหมด</h2>
+            <div id="roomsList"></div>
+        </div>
 
-  <h1 id="title">SmartRent Manager</h1>
-  <button id="btnAllRooms" onclick="alert(langText.allRooms)">All Rooms</button>
-  <button id="btnAddRoom" onclick="alert(langText.addRoom)">Add Room</button>
-  <button id="btnSummary" onclick="alert(langText.summary)">Summary</button>
-  <div>
-    <label id="lblUser">Username:</label>
-    <input type="text" />
-    <label id="lblPass">Password:</label>
-    <input type="password" />
-    <button id="btnLogin">Login</button>
-  </div>
+        <!-- Add Room Page -->
+        <div id="addRoomPage" class="page container">
+            <h2 data-translate="addRoom">เพิ่มห้องใหม่</h2>
+            <div class="card">
+                <form id="addRoomForm">
+                    <div class="form-group">
+                        <label data-translate="project">โครงการ</label>
+                        <input type="text" id="project" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="roomNumber">เลขห้อง</label>
+                        <input type="text" id="roomNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="startDate">วันที่เริ่มสัญญา</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="endDate">วันที่สิ้นสุดสัญญา</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="monthlyRent">ค่าเช่าต่อเดือน (บาท)</label>
+                        <input type="number" id="monthlyRent" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="dueDate">วันครบกำหนดชำระ</label>
+                        <input type="number" id="dueDate" min="1" max="31" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="deposit">เงินประกัน (บาท)</label>
+                        <input type="number" id="deposit" required>
+                    </div>
+                    <button type="submit" class="btn btn-success" data-translate="save">บันทึก</button>
+                </form>
+            </div>
+        </div>
 
-<script>
-const translations = {
-  en: {
-    title: "SmartRent Manager",
-    allRooms: "All Rooms",
-    addRoom: "Add Room",
-    summary: "Summary",
-    login: "Login",
-    username: "Username:",
-    password: "Password:"
-  },
-  th: {
-    title: "ผู้จัดการห้องเช่า",
-    allRooms: "ห้องทั้งหมด",
-    addRoom: "เพิ่มห้อง",
-    summary: "สรุปรายการ",
-    login: "เข้าสู่ระบบ",
-    username: "ชื่อผู้ใช้:",
-    password: "รหัสผ่าน:"
-  },
-  zh: {
-    title: "租赁管理系统",
-    allRooms: "所有房间",
-    addRoom: "添加房间",
-    summary: "摘要",
-    login: "登录",
-    username: "用户名：",
-    password: "密码："
-  }
-};
+        <!-- Room Detail Page -->
+        <div id="roomDetailPage" class="page container">
+            <div id="roomDetailContent"></div>
+        </div>
 
-let currentLang = localStorage.getItem("lang") || "en";
-let langText = translations[currentLang];
+        <!-- Summary Page -->
+        <div id="summaryPage" class="page container">
+            <h2 data-translate="summary">สรุปรายรับ-รายจ่าย</h2>
+            <div id="summaryContent"></div>
+        </div>
 
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem("lang", lang);
-  langText = translations[lang];
-  updateText();
-}
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page container">
+            <h2 data-translate="settings">ตั้งค่า</h2>
+            <div class="card">
+                <div class="form-group">
+                    <label data-translate="systemName">ชื่อระบบ</label>
+                    <input type="text" id="systemName" value="ระบบจัดการห้องเช่า">
+                    <button class="btn" onclick="updateSystemName()" data-translate="update">อัปเดต</button>
+                </div>
+                
+                <hr style="margin: 20px 0;">
+                
+                <button class="btn" onclick="clearData()" data-translate="clearData">ล้างข้อมูล</button>
+                <button class="btn" onclick="exportData()" data-translate="export">ส่งออกข้อมูล</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData()">
+                <button class="btn" onclick="document.getElementById('importFile').click()" data-translate="import">นำเข้าข้อมูล</button>
+                <button class="btn btn-danger" onclick="logout()" data-translate="logout">ออกจากระบบ</button>
+                
+                <p style="margin-top: 20px; font-size: 14px; color: #666;" data-translate="dataNote">
+                    ข้อมูลถูกเก็บไว้ในอุปกรณ์ของคุณเท่านั้น
+                </p>
+            </div>
+        </div>
 
-function updateText() {
-  document.getElementById("title").innerText = langText.title;
-  document.getElementById("btnAllRooms").innerText = langText.allRooms;
-  document.getElementById("btnAddRoom").innerText = langText.addRoom;
-  document.getElementById("btnSummary").innerText = langText.summary;
-  document.getElementById("btnLogin").innerText = langText.login;
-  document.getElementById("lblUser").innerText = langText.username;
-  document.getElementById("lblPass").innerText = langText.password;
-  document.getElementById("languageSelector").value = currentLang;
-}
+        <!-- Navigation -->
+        <div class="navbar">
+            <div class="nav-item active" onclick="showPage('roomsPage')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text" data-translate="rooms">ห้อง</div>
+            </div>
+            <div class="nav-item" onclick="showPage('addRoomPage')">
+                <div class="nav-icon">➕</div>
+                <div class="nav-text" data-translate="add">เพิ่ม</div>
+            </div>
+            <div class="nav-item" onclick="showPage('summaryPage')">
+                <div class="nav-icon">📊</div>
+                <div class="nav-text" data-translate="summary">สรุป</div>
+            </div>
+            <div class="nav-item" onclick="showPage('settingsPage')">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-text" data-translate="settings">ตั้งค่า</div>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // Language translations
+        const translations = {
+            th: {
+                login: "เข้าสู่ระบบ",
+                username: "ชื่อผู้ใช้",
+                password: "รหัสผ่าน",
+                rememberMe: "จำรหัสผ่าน",
+                loginBtn: "เข้าสู่ระบบ",
+                allRooms: "ห้องทั้งหมด",
+                addRoom: "เพิ่มห้องใหม่",
+                project: "โครงการ",
+                roomNumber: "เลขห้อง",
+                startDate: "วันที่เริ่มสัญญา",
+                endDate: "วันที่สิ้นสุดสัญญา",
+                monthlyRent: "ค่าเช่าต่อเดือน (บาท)",
+                dueDate: "วันครบกำหนดชำระ",
+                deposit: "เงินประกัน (บาท)",
+                save: "บันทึก",
+                summary: "สรุปรายรับ-รายจ่าย",
+                settings: "ตั้งค่า",
+                rooms: "ห้อง",
+                add: "เพิ่ม",
+                systemName: "ชื่อระบบ",
+                update: "อัปเดต",
+                clearData: "ล้างข้อมูล",
+                export: "ส่งออกข้อมูล",
+                import: "นำเข้าข้อมูล",
+                logout: "ออกจากระบบ",
+                dataNote: "ข้อมูลถูกเก็บไว้ในอุปกรณ์ของคุณเท่านั้น",
+                normal: "ปกติ",
+                overdue: "ค้างจ่าย",
+                expiring: "ใกล้หมดสัญญา",
+                viewDetails: "ดูรายละเอียด",
+                edit: "แก้ไข",
+                delete: "ลบ",
+                back: "กลับ",
+                totalIncome: "รายรับรวม",
+                totalExpense: "รายจ่ายรวม",
+                netBalance: "คงเหลือ",
+                room: "ห้อง"
+            },
+            en: {
+                login: "Login",
+                username: "Username",
+                password: "Password",
+                rememberMe: "Remember me",
+                loginBtn: "Login",
+                allRooms: "All Rooms",
+                addRoom: "Add New Room",
+                project: "Project",
+                roomNumber: "Room Number",
+                startDate: "Start Date",
+                endDate: "End Date",
+                monthlyRent: "Monthly Rent (THB)",
+                dueDate: "Due Date",
+                deposit: "Deposit (THB)",
+                save: "Save",
+                summary: "Income-Expense Summary",
+                settings: "Settings",
+                rooms: "Rooms",
+                add: "Add",
+                systemName: "System Name",
+                update: "Update",
+                clearData: "Clear Data",
+                export: "Export Data",
+                import: "Import Data",
+                logout: "Logout",
+                dataNote: "Data is stored only on your device",
+                normal: "Normal",
+                overdue: "Overdue",
+                expiring: "Expiring",
+                viewDetails: "View Details",
+                edit: "Edit",
+                delete: "Delete",
+                back: "Back",
+                totalIncome: "Total Income",
+                totalExpense: "Total Expense",
+                netBalance: "Net Balance",
+                room: "Room"
+            },
+            zh: {
+                login: "登录",
+                username: "用户名",
+                password: "密码",
+                rememberMe: "记住密码",
+                loginBtn: "登录",
+                allRooms: "所有房间",
+                addRoom: "添加新房间",
+                project: "项目",
+                roomNumber: "房间号",
+                startDate: "开始日期",
+                endDate: "结束日期",
+                monthlyRent: "月租金 (泰铢)",
+                dueDate: "到期日",
+                deposit: "押金 (泰铢)",
+                save: "保存",
+                summary: "收支汇总",
+                settings: "设置",
+                rooms: "房间",
+                add: "添加",
+                systemName: "系统名称",
+                update: "更新",
+                clearData: "清除数据",
+                export: "导出数据",
+                import: "导入数据",
+                logout: "退出",
+                dataNote: "数据仅存储在您的设备上",
+                normal: "正常",
+                overdue: "逾期",
+                expiring: "即将到期",
+                viewDetails: "查看详情",
+                edit: "编辑",
+                delete: "删除",
+                back: "返回",
+                totalIncome: "总收入",
+                totalExpense: "总支出",
+                netBalance: "净余额",
+                room: "房间"
+            }
+        };
 
-let currentLang = localStorage.getItem("lang") || "en";
-let langText = translations[currentLang];
+        let currentLang = 'th';
+        let rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+        let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        let currentPage = 'roomsPage';
 
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem("lang", lang);
-  langText = translations[lang];
-  updateText();
-}
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isLoggedIn) {
+                showMainApp();
+            }
+            loadRooms();
+            updateTranslations();
+            loadSystemName();
+        });
 
-function updateText() {
-  document.getElementById("languageSelector").value = currentLang;
-  for (const id in langText) {
-    const el = document.getElementById(id);
-    if (el) el.innerText = langText[id];
-  }
-}
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('rememberMe').checked;
 
-function login() {
-  const user = document.getElementById("username").value;
-  const pass = document.getElementById("password").value;
-  const remember = document.getElementById("rememberMe").checked;
-  if (user === "admin" && pass === "0000") {
-    localStorage.setItem("loggedIn", "true");
-    if (remember) localStorage.setItem("remember", "true");
-    document.getElementById("loginContainer").style.display = "none";
-    document.getElementById("mainContent").style.display = "block";
-  } else {
-    alert("Login failed: กรุณาตรวจสอบชื่อผู้ใช้และรหัสผ่าน\nPlease check your username and password.");
-  }
-}
+            if (username === 'admin' && password === '0000') {
+                localStorage.setItem('isLoggedIn', 'true');
+                if (remember) {
+                    localStorage.setItem('rememberLogin', 'true');
+                }
+                showMainApp();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
 
-window.onload = () => {
-  if (localStorage.getItem("remember") === "true" && localStorage.getItem("loggedIn") === "true") {
-    document.getElementById("loginContainer").style.display = "none";
-    document.getElementById("mainContent").style.display = "block";
-  }
-  updateText();
-};
+        function showMainApp() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            showPage('roomsPage');
+        }
 
-</script>
-</div>
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('rememberLogin');
+            location.reload();
+        }
+
+        // Language switching
+        function toggleLanguage() {
+            const langs = ['th', 'en', 'zh'];
+            const langButtons = ['TH', 'EN', '中'];
+            const currentIndex = langs.indexOf(currentLang);
+            const nextIndex = (currentIndex + 1) % langs.length;
+            
+            currentLang = langs[nextIndex];
+            document.querySelector('.lang-btn').textContent = langButtons[nextIndex];
+            updateTranslations();
+            localStorage.setItem('currentLang', currentLang);
+        }
+
+        function updateTranslations() {
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLang] && translations[currentLang][key]) {
+                    if (element.tagName === 'INPUT' && element.type !== 'submit') {
+                        element.placeholder = translations[currentLang][key];
+                    } else {
+                        element.textContent = translations[currentLang][key];
+                    }
+                }
+            });
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update active nav item
+            const navMap = {
+                'roomsPage': 0,
+                'addRoomPage': 1,
+                'summaryPage': 2,
+                'settingsPage': 3
+            };
+            
+            if (navMap[pageId] !== undefined) {
+                document.querySelectorAll('.nav-item')[navMap[pageId]].classList.add('active');
+            }
+
+            currentPage = pageId;
+
+            // Load specific page content
+            if (pageId === 'roomsPage') {
+                loadRooms();
+            } else if (pageId === 'summaryPage') {
+                loadSummary();
+            }
+        }
+
+        // Room management
+        function addRoom(roomData) {
+            const room = {
+                id: Date.now(),
+                ...roomData,
+                createdAt: new Date().toISOString()
+            };
+            rooms.push(room);
+            saveRooms();
+            loadRooms();
+        }
+
+        function deleteRoom(roomId) {
+            if (confirm('Are you sure you want to delete this room?')) {
+                rooms = rooms.filter(room => room.id !== roomId);
+                saveRooms();
+                loadRooms();
+                showPage('roomsPage');
+            }
+        }
+
+        function getRoomStatus(room) {
+            const today = new Date();
+            const endDate = new Date(room.endDate);
+            const daysDiff = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff < 90) {
+                return 'expiring';
+            }
+            
+            // Check if overdue (simplified - you can enhance this)
+            const currentDay = today.getDate();
+            if (currentDay > parseInt(room.dueDate)) {
+                return 'overdue';
+            }
+            
+            return 'normal';
+        }
+
+        function loadRooms() {
+            const roomsList = document.getElementById('roomsList');
+            if (!roomsList) return;
+
+            // Sort rooms by status priority
+            const sortedRooms = [...rooms].sort((a, b) => {
+                const statusPriority = { expiring: 3, overdue: 2, normal: 1 };
+                return statusPriority[getRoomStatus(b)] - statusPriority[getRoomStatus(a)];
+            });
+
+            roomsList.innerHTML = sortedRooms.map(room => {
+                const status = getRoomStatus(room);
+                const statusText = translations[currentLang][status] || status;
+                
+                return `
+                    <div class="card room-card ${status}" onclick="showRoomDetail(${room.id})">
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div style="flex: 1;">
+                                <h3>${room.project} - ${room.roomNumber}</h3>
+                                <p>Monthly Rent: ฿${room.monthlyRent.toLocaleString()}</p>
+                                <p>Contract: ${room.startDate} to ${room.endDate}</p>
+                            </div>
+                            <div>
+                                <span class="status-badge status-${status}">${statusText}</span>
+                            </div>
+                        </div>
+                        <button class="btn" style="margin-top: 10px;" onclick="event.stopPropagation(); showRoomDetail(${room.id})">${translations[currentLang].viewDetails}</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showRoomDetail(roomId) {
+            const room = rooms.find(r => r.id === roomId);
+            if (!room) return;
+
+            const status = getRoomStatus(room);
+            const statusText = translations[currentLang][status] || status;
+
+            document.getElementById('roomDetailContent').innerHTML = `
+                <button class="btn" onclick="showPage('roomsPage')">${translations[currentLang].back}</button>
+                <div class="card" style="margin-top: 20px;">
+                    <h2>${room.project} - ${room.roomNumber}</h2>
+                    <div style="margin: 20px 0;">
+                        <span class="status-badge status-${status}">${statusText}</span>
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].project}:</strong> ${room.project}
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].roomNumber}:</strong> ${room.roomNumber}
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].startDate}:</strong> ${room.startDate}
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].endDate}:</strong> ${room.endDate}
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].monthlyRent}:</strong> ฿${room.monthlyRent.toLocaleString()}
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].dueDate}:</strong> ${room.dueDate}
+                    </div>
+                    <div class="form-group">
+                        <strong>${translations[currentLang].deposit}:</strong> ฿${room.deposit.toLocaleString()}
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-danger" onclick="deleteRoom(${room.id})">${translations[currentLang].delete}</button>
+                    </div>
+                </div>
+            `;
+            showPage('roomDetailPage');
+        }
+
+        function loadSummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            if (!summaryContent) return;
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            const summaryData = rooms.map(room => {
+                const income = room.monthlyRent * 12; // Simplified calculation
+                const expense = 0; // You can add expense tracking
+                const net = income - expense;
+                
+                totalIncome += income;
+                totalExpense += expense;
+                
+                return { room, income, expense, net };
+            });
+
+            const totalNet = totalIncome - totalExpense;
+
+            summaryContent.innerHTML = `
+                <div class="card">
+                    <div class="total-row" style="padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
+                        <h3>${translations[currentLang].totalIncome}: ฿${totalIncome.toLocaleString()}</h3>
+                        <h3>${translations[currentLang].totalExpense}: ฿${totalExpense.toLocaleString()}</h3>
+                        <h3>${translations[currentLang].netBalance}: ฿${totalNet.toLocaleString()}</h3>
+                    </div>
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th>${translations[currentLang].room}</th>
+                                <th>${translations[currentLang].totalIncome}</th>
+                                <th>${translations[currentLang].totalExpense}</th>
+                                <th>${translations[currentLang].netBalance}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${summaryData.map(item => `
+                                <tr>
+                                    <td>${item.room.project} - ${item.room.roomNumber}</td>
+                                    <td>฿${item.income.toLocaleString()}</td>
+                                    <td>฿${item.expense.toLocaleString()}</td>
+                                    <td>฿${item.net.toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Form handling
+        document.getElementById('addRoomForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                project: document.getElementById('project').value,
+                roomNumber: document.getElementById('roomNumber').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                monthlyRent: parseInt(document.getElementById('monthlyRent').value),
+                dueDate: document.getElementById('dueDate').value,
+                deposit: parseInt(document.getElementById('deposit').value)
+            };
+            
+            addRoom(formData);
+            this.reset();
+            showPage('roomsPage');
+        });
+
+        // Data management
+        function saveRooms() {
+            localStorage.setItem('rooms', JSON.stringify(rooms));
+            autoBackup();
+        }
+
+        function autoBackup() {
+            const backupData = {
+                rooms: rooms,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Keep last 4 backups
+            let backups = JSON.parse(localStorage.getItem('autoBackups') || '[]');
+            backups.unshift(backupData);
+            if (backups.length > 4) {
+                backups = backups.slice(0, 4);
+            }
+            localStorage.setItem('autoBackups', JSON.stringify(backups));
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data?')) {
+                rooms = [];
+                localStorage.removeItem('rooms');
+                loadRooms();
+            }
+        }
+
+        function exportData() {
+            const data = {
+                rooms: rooms,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const fileName = `rental_data_${new Date().toISOString().split('T')[0]}.json`;
+            
+            if (navigator.share) {
+                // Mobile sharing
+                const file = new File([dataBlob], fileName, { type: 'application/json' });
+                navigator.share({
+                    files: [file],
+                    title: 'Rental Management Data',
+                    text: 'Rental management system backup data'
+                }).catch(err => console.log('Error sharing:', err));
+            } else {
+                // Fallback download
+                const url = URL.createObjectURL(dataBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function importData() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.rooms && Array.isArray(data.rooms)) {
+                        if (confirm('This will replace all current data. Continue?')) {
+                            rooms = data.rooms;
+                            saveRooms();
+                            loadRooms();
+                            alert('Data imported successfully!');
+                        }
+                    } else {
+                        alert('Invalid file format!');
+                    }
+                } catch (error) {
+                    alert('Error reading file!');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function updateSystemName() {
+            const newName = document.getElementById('systemName').value;
+            document.getElementById('appTitle').textContent = newName;
+            localStorage.setItem('systemName', newName);
+        }
+
+        function loadSystemName() {
+            const savedName = localStorage.getItem('systemName');
+            if (savedName) {
+                document.getElementById('appTitle').textContent = savedName;
+                document.getElementById('systemName').value = savedName;
+            }
+        }
+
+        // Load saved language preference
+        const savedLang = localStorage.getItem('currentLang');
+        if (savedLang) {
+            currentLang = savedLang;
+            const langButtons = ['TH', 'EN', '中'];
+            const langs = ['th', 'en', 'zh'];
+            const index = langs.indexOf(currentLang);
+            if (index !== -1) {
+                document.querySelector('.lang-btn').textContent = langButtons[index];
+            }
+        }
+
+        // Check for remembered login
+        if (localStorage.getItem('rememberLogin') === 'true') {
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = '0000';
+            document.getElementById('rememberMe').checked = true;
+        }
+
+        // Service Worker registration for offline functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                    const CACHE_NAME = 'rental-app-v1';
+                    const urlsToCache = ['/'];
+
+                    self.addEventListener('install', function(event) {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(function(cache) {
+                                    return cache.addAll(urlsToCache);
+                                })
+                        );
+                    });
+
+                    self.addEventListener('fetch', function(event) {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(function(response) {
+                                    if (response) {
+                                        return response;
+                                    }
+                                    return fetch(event.request);
+                                })
+                        );
+                    });
+                `)).then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                }).catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
+        // Auto-backup on app load
+        window.addEventListener('load', function() {
+            autoBackup();
+        });
+
+        // Prevent zooming on mobile
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        // Handle back button for mobile
+        window.addEventListener('popstate', function(event) {
+            if (currentPage !== 'roomsPage') {
+                showPage('roomsPage');
+            }
+        });
+    </script>
 </body>
 </html>
