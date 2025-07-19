@@ -1,330 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartRent AI Manager</title>
   <style>
-    :root {
-      --bg-start: #0f2027;
-      --bg-end: #203a43;
-      --card-bg: rgba(255,255,255,0.1);
-      --card-border: rgba(255,255,255,0.2);
-      --btn-start: #00c6ff;
-      --btn-end: #0072ff;
-      --ripple-color: rgba(255,255,255,0.4);
-      --text-color: #ffffff;
-      --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
     * { margin:0; padding:0; box-sizing:border-box; }
-    html, body {
-      width:100%; height:100%; overflow-x:hidden;
-      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-      color: var(--text-color);
-      font-family: var(--font-sans);
-      display:flex; justify-content:center; align-items:flex-start;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43);
+      color: #fff;
+      min-height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px;
     }
-    .header {
-      position: fixed; top:0; width:100%;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding:16px;
-      display:flex; justify-content:space-between; align-items:center;
-      z-index:100;
+    .device {
+      width:360px; max-width:100%; height:720px;
+      background:#000; border-radius:40px; box-shadow:0 0 20px rgba(0,0,0,0.5);
+      overflow:hidden; position:relative;
     }
-    .header h1 { font-size:1.5rem; }
-    .lang-switch button {
-      background:none; border:none; color:var(--text-color);
-      font-size:1rem; margin-left:8px; cursor:pointer;
+    .screen {
+      width:100%; height:100%;
+      background:#1a1a1a; display:flex; flex-direction:column;
+      padding:20px;
     }
-    .container {
-      width:100%; max-width:480px; margin-top:80px; padding:20px;
+    /* Login Overlay */
+    #loginOverlay {
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.85); z-index:50;
+      display:flex; justify-content:center; align-items:center;
     }
-    .page { display:none; }
-    .page.active { display:block; animation:fadeIn 0.3s ease-in; }
-    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius:16px;
-      padding:16px; margin:12px 0;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    #loginBox {
+      background:#222; padding:24px; border-radius:16px;
+      width:80%; box-shadow:0 4px 12px rgba(0,0,0,0.7);
     }
-    .btn {
-      position: relative; overflow: hidden;
-      background: linear-gradient(90deg, var(--btn-start), var(--btn-end));
-      border:none; border-radius:8px;
-      color: #fff; padding:12px 16px; margin:8px 0;
-      font-size:1rem; cursor:pointer; user-select:none;
-      transition: transform 0.2s ease;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn .ripple {
-      position: absolute; border-radius:50%;
-      transform: scale(0);
-      animation: ripple 600ms linear;
-      background-color: var(--ripple-color);
-    }
-    @keyframes ripple {
-      to { transform: scale(4); opacity: 0; }
+    #loginBox h2 {
+      margin-bottom:16px; font-size:24px; text-align:center;
     }
     .form-group { margin-bottom:12px; }
-    .form-group label { display:block; margin-bottom:4px; }
-    .form-group input, .form-group select {
+    .form-group label { display:block; margin-bottom:4px; font-size:14px; }
+    .form-group input {
       width:100%; padding:8px; border:none; border-radius:8px;
-      background: rgba(255,255,255,0.15); color:#fff;
+      background:rgba(255,255,255,0.1); color:#fff;
     }
-    .summary-table {
-      width:100%; border-collapse:collapse; margin-top:16px;
+    #loginBtn {
+      width:100%; padding:12px; border:none; border-radius:8px;
+      background:linear-gradient(90deg,#00c6ff,#0072ff);
+      color:#fff; font-size:16px; cursor:pointer;
+      transition:transform 0.1s;
     }
-    .summary-table th, .summary-table td {
-      padding:12px; border-bottom:1px solid rgba(255,255,255,0.2);
-      text-align:left;
+    #loginBtn:active { transform:scale(0.98); }
+    /* Page common */
+    .page { display:none; flex:1; overflow:hidden; }
+    .page.active { display:flex; flex-direction:column; }
+    /* Header */
+    .header {
+      position:relative; text-align:center; margin-bottom:20px;
     }
-    .summary-table th { background: rgba(255,255,255,0.1); }
+    .header .label {
+      font-size:12px; letter-spacing:1px; color:#888; text-transform:uppercase;
+    }
+    .header h1 { font-size:28px; margin-top:4px; }
+    .add-btn {
+      position:absolute; right:0; top:0; width:36px; height:36px;
+      background:linear-gradient(135deg,#00c6ff,#0072ff);
+      border-radius:50%; display:flex; justify-content:center; align-items:center;
+      cursor:pointer;
+    }
+    .add-btn:before { content:'+'; font-size:24px; }
+    /* Cards container */
+    .cards {
+      flex:1; overflow-y:auto; padding-right:4px;
+    }
+    .card {
+      display:flex; justify-content:space-between; flex-direction:column;
+      padding:16px; border-radius:16px; margin-bottom:16px; color:#fff;
+    }
+    .card.red { background:linear-gradient(135deg,#ff5f6d,#c43a30); }
+    .card.yellow { background:linear-gradient(135deg,#fbc531,#e1b12c); }
+    .card.green { background:linear-gradient(135deg,#34e89e,#0f3443); }
+    .card.dark { background:rgba(255,255,255,0.05); }
+    .card-title { font-size:32px; font-weight:bold; }
+    .card-status { font-size:16px; margin-top:4px; }
+    .card-info {
+      display:flex; justify-content:space-between; align-items:flex-end;
+      margin-top:12px;
+    }
+    .card-info .rent { font-size:14px; opacity:0.8; }
+    .card-info .diff { font-size:18px; }
+    /* Footer */
+    .footer {
+      display:flex; gap:12px; margin-top:10px;
+    }
+    .footer .btn {
+      flex:1; padding:16px; border:none; border-radius:12px;
+      font-size:16px; font-weight:bold; color:#fff; cursor:pointer;
+      background:linear-gradient(90deg,#9d50bb,#6e48aa);
+    }
+    .footer .settings { background:linear-gradient(90deg,#0072ff,#00c6ff); }
+    /* Scroll hide */
+    .cards::-webkit-scrollbar { display:none; }
+    .cards { -ms-overflow-style:none; scrollbar-width:none; }
+    /* Forms */
+    .content-card {
+      background:rgba(255,255,255,0.1); border-radius:16px;
+      padding:16px; margin-bottom:16px; overflow-y:auto;
+    }
+    /* Buttons ripple */
+    .btn-ripple {
+      position:relative; overflow:hidden;
+    }
+    .btn-ripple:active::after {
+      content:''; position:absolute;
+      width:100px; height:100px; background:rgba(255,255,255,0.3);
+      border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+      animation:ripple 0.6s linear;
+    }
+    @keyframes ripple { to{transform:translate(-50%,-50%) scale(4); opacity:0;} }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Login Page -->
-    <div id="loginPage" class="page active">
-      <div class="card">
-        <h2 data-translate="login">Login</h2>
+  <div class="device">
+    <div id="loginOverlay">
+      <div id="loginBox">
+        <h2>Login</h2>
         <form id="loginForm">
-          <div class="form-group">
-            <label for="username" data-translate="username">Username</label>
-            <input type="text" id="username" required />
-          </div>
-          <div class="form-group">
-            <label for="password" data-translate="password">Password</label>
-            <input type="password" id="password" required />
-          </div>
-          <div class="form-group">
-            <label><input type="checkbox" id="rememberMe" /> <span data-translate="rememberMe">Remember Me</span></label>
-          </div>
-          <button type="submit" class="btn" data-translate="loginBtn">Login</button>
+          <div class="form-group"><label>Username</label><input type="text" id="username" required/></div>
+          <div class="form-group"><label>Password</label><input type="password" id="password" required/></div>
+          <button type="submit" id="loginBtn">Login</button>
         </form>
       </div>
     </div>
-    <!-- Rooms Page -->
-    <div id="roomsPage" class="page">
-      <div class="header">
-        <h1 data-translate="appTitle">SmartRent AI Manager</h1>
-        <div class="lang-switch">
-          <button onclick="setLang('en')">EN</button>
-          <button onclick="setLang('th')">TH</button>
-          <button onclick="setLang('zh')">中</button>
+    <div class="screen">
+      <!-- All Rooms Page -->
+      <div id="roomsPage" class="page active">
+        <div class="header">
+          <div class="label">Dashboard</div>
+          <h1>All Rooms</h1>
+          <div class="add-btn" onclick="showPage('addRoomPage')"></div>
+        </div>
+        <div class="cards">
+          <div class="card red">
+            <div><div class="card-title">101</div><div class="card-status">Expiring soon</div></div>
+            <div class="card-info"><div class="rent">Rent: $1,500</div><div class="diff">- $500</div></div>
+          </div>
+          <div class="card yellow">
+            <div><div class="card-title">102</div><div class="card-status">Overdue</div></div>
+            <div class="card-info"><div class="rent">Rent: $1,700</div><div class="diff">- $200</div></div>
+          </div>
+          <div class="card green">
+            <div><div class="card-title">103</div><div class="card-status">Occupied</div></div>
+            <div class="card-info"><div class="rent">Rent: $1,200</div><div class="diff">+ $0</div></div>
+          </div>
+          <div class="card dark">
+            <div><div class="card-title">104</div><div class="card-status">Vacant</div></div>
+            <div class="card-info"><div class="rent">Rent: —</div><div class="diff">+ $0</div></div>
+          </div>
+        </div>
+        <div class="footer">
+          <button class="btn-ripple btn">Summary</button>
+          <button class="btn-ripple btn settings" onclick="showPage('settingsPage')">Settings</button>
         </div>
       </div>
-      <div class="card">
-        <button class="btn" onclick="showPage('addRoomPage')" data-translate="addRoom">Add Room</button>
-        <button class="btn" onclick="showPage('summaryPage')" data-translate="summary">Summary</button>
-        <button class="btn" onclick="showPage('settingsPage')" data-translate="settings">Settings</button>
+      <!-- Add Room Page -->
+      <div id="addRoomPage" class="page">
+        <div class="header"><div class="label">Add Room</div></div>
+        <div class="content-card">
+          <form id="addRoomForm">
+            <div class="form-group"><label>Project</label><input type="text" id="project"/></div>
+            <div class="form-group"><label>Room Number</label><input type="text" id="roomNumber"/></div>
+            <div class="form-group"><label>Start Date</label><input type="date" id="startDate"/></div>
+            <div class="form-group"><label>End Date</label><input type="date" id="endDate"/></div>
+            <div class="form-group"><label>Monthly Rent</label><input type="number" id="monthlyRent"/></div>
+            <div class="form-group"><label>Due Date (day)</label><input type="number" id="dueDate"/></div>
+            <div class="form-group"><label>Deposit</label><input type="number" id="deposit"/></div>
+          </form>
+        </div>
+        <div class="footer">
+          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
+          <button class="btn-ripple btn" onclick="showPage('roomsPage')">Save</button>
+        </div>
       </div>
-      <div id="roomsList"></div>
-    </div>
-    <!-- Add Room Page -->
-    <div id="addRoomPage" class="page">
-      <div class="header"><h1 data-translate="addRoom">Add Room</h1></div>
-      <div class="card">
-        <form id="addRoomForm">
-          <div class="form-group"><label data-translate="project">Project</label><input type="text" id="project" required /></div>
-          <div class="form-group"><label data-translate="roomNumber">Room Number</label><input type="text" id="roomNumber" required /></div>
-          <div class="form-group"><label data-translate="startDate">Start Date</label><input type="date" id="startDate" /></div>
-          <div class="form-group"><label data-translate="endDate">End Date</label><input type="date" id="endDate" /></div>
-          <div class="form-group"><label data-translate="monthlyRent">Monthly Rent (THB)</label><input type="number" id="monthlyRent" required /></div>
-          <div class="form-group"><label data-translate="dueDate">Due Date</label><input type="number" id="dueDate" required /></div>
-          <div class="form-group"><label data-translate="deposit">Deposit (THB)</label><input type="number" id="deposit" required /></div>
-          <button type="submit" class="btn" data-translate="save">Save</button>
-        </form>
-        <button class="btn" onclick="showPage('roomsPage')" data-translate="back">Back</button>
+      <!-- Room Detail Page -->
+      <div id="roomDetailPage" class="page">
+        <div class="header"><div class="label">Room Details</div></div>
+        <div class="content-card">
+          <div id="roomInfo">Room info will appear here</div>
+          <h3>Add Entry</h3>
+          <form id="entryForm">
+            <div class="form-group"><label>Type</label><select id="entryType"><option>Income</option><option>Expense</option></select></div>
+            <div class="form-group"><label>Description</label><input type="text" id="entryDescription"/></div>
+            <div class="form-group"><label>Amount</label><input type="number" id="entryAmount"/></div>
+          </form>
+        </div>
+        <div class="footer">
+          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
+          <button class="btn-ripple btn" onclick="showPage('roomsPage')">Add</button>
+        </div>
       </div>
-    </div>
-    <!-- Room Detail Page -->
-    <div id="roomDetailPage" class="page">
-      <div class="header"><h1 data-translate="roomDetail">Room Details</h1></div>
-      <div id="roomInfo" class="card"></div>
-      <div id="entriesList"></div>
-      <div class="card">
-        <h3 data-translate="addEntry">Add Entry</h3>
-        <form id="entryForm">
-          <div class="form-group"><label data-translate="entryType">Type</label>
-            <select id="entryType"><option value="income" data-translate="income">Income</option><option value="expense" data-translate="expense">Expense</option></select>
-          </div>
-          <div class="form-group"><label data-translate="description">Description</label><input type="text" id="entryDescription" required /></div>
-          <div class="form-group"><label data-translate="amount">Amount</label><input type="number" id="entryAmount" required /></div>
-          <button type="submit" class="btn" data-translate="add">Add</button>
-        </form>
-        <button class="btn" onclick="showPage('roomsPage')" data-translate="back">Back</button>
+      <!-- Summary Page -->
+      <div id="summaryPage" class="page">
+        <div class="header"><div class="label">Summary</div></div>
+        <div class="content-card" id="summaryContent">Summary data here</div>
+        <div class="footer">
+          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
+        </div>
       </div>
-    </div>
-    <!-- Summary Page -->
-    <div id="summaryPage" class="page">
-      <div class="header"><h1 data-translate="summary">Summary</h1></div>
-      <div id="summaryContent" class="card"></div>
-      <button class="btn" onclick="showPage('roomsPage')" data-translate="back">Back</button>
-    </div>
-    <!-- Settings Page -->
-    <div id="settingsPage" class="page">
-      <div class="header"><h1 data-translate="settings">Settings</h1></div>
-      <div class="card">
-        <button class="btn" onclick="exportData()" data-translate="export">Export Data</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
-        <button class="btn" onclick="document.getElementById('importFile').click()" data-translate="import">Import Data</button>
-        <button class="btn" onclick="logout()" data-translate="logout">Logout</button>
+      <!-- Settings Page -->
+      <div id="settingsPage" class="page">
+        <div class="header"><div class="label">Settings</div></div>
+        <div class="content-card">
+          Settings options here
+        </div>
+        <div class="footer">
+          <button class="btn-ripple btn settings" onclick="showPage('roomsPage')">Back</button>
+        </div>
       </div>
     </div>
   </div>
-
   <script>
-    // Ripple effect
-    document.addEventListener('click', function(e) {
-      if (!e.target.classList.contains('btn')) return;
-      const btn = e.target;
-      const circle = document.createElement('span');
-      const d = Math.max(btn.clientWidth, btn.clientHeight);
-      circle.style.width = circle.style.height = d + 'px';
-      circle.style.left = (e.clientX - btn.offsetLeft - d/2) + 'px';
-      circle.style.top = (e.clientY - btn.offsetTop - d/2) + 'px';
-      circle.classList.add('ripple');
-      const existing = btn.getElementsByClassName('ripple')[0];
-      if (existing) existing.remove();
-      btn.appendChild(circle);
-    });
-
-    // Localization
-    const translations = {
-      en: { login:"Login", username:"Username", password:"Password", rememberMe:"Remember Me", loginBtn:"Login",
-            appTitle:"SmartRent AI Manager", allRooms:"All Rooms", addRoom:"Add Room", project:"Project", roomNumber:"Room Number",
-            startDate:"Start Date", endDate:"End Date", monthlyRent:"Monthly Rent (THB)", dueDate:"Due Date", deposit:"Deposit (THB)",
-            save:"Save", back:"Back", roomDetail:"Room Details", addEntry:"Add Entry", entryType:"Type", income:"Income",
-            expense:"Expense", description:"Description", amount:"Amount", add:"Add", summary:"Summary", settings:"Settings",
-            export:"Export Data", import:"Import Data", logout:"Logout", viewDetails:"View Details", delete:"Delete", net:"Net" },
-      th: { login:"เข้าสู่ระบบ", username:"ชื่อผู้ใช้", password:"รหัสผ่าน", rememberMe:"จำการเข้าสู่ระบบ", loginBtn:"เข้าสู่ระบบ",
-            appTitle:"SmartRent AI Manager", allRooms:"ห้องทั้งหมด", addRoom:"เพิ่มห้อง", project:"โครงการ", roomNumber:"เลขห้อง",
-            startDate:"วันที่เริ่มสัญญา", endDate:"วันที่สิ้นสุด", monthlyRent:"ค่าเช่ารายเดือน (บาท)", dueDate:"วันครบกำหนด", deposit:"เงินมัดจำ (บาท)",
-            save:"บันทึก", back:"ย้อนกลับ", roomDetail:"รายละเอียดห้อง", addEntry:"เพิ่มรายการ", entryType:"ประเภท", income:"รายรับ",
-            expense:"รายจ่าย", description:"รายละเอียด", amount:"จำนวนเงิน", add:"เพิ่ม", summary:"สรุป", settings:"ตั้งค่า",
-            export:"ส่งออกข้อมูล", import:"นำเข้าข้อมูล", logout:"ออกจากระบบ", viewDetails:"ดูรายละเอียด", delete:"ลบ", net:"คงเหลือ" },
-      zh: { login:"登录", username:"用户名", password:"密码", rememberMe:"记住登录", loginBtn:"登录",
-            appTitle:"房租AI管理系统", allRooms:"所有房间", addRoom:"添加房间", project:"项目", roomNumber:"房间号",
-            startDate:"开始日期", endDate:"结束日期", monthlyRent:"月租金 (泰铢)", dueDate:"到期日", deposit:"押金 (泰铢)",
-            save:"保存", back:"返回", roomDetail:"房间详情", addEntry:"添加条目", entryType:"类型", income:"收入", expense:"支出",
-            description:"描述", amount:"金额", add:"添加", summary:"摘要", settings:"设置", export:"导出数据", import:"导入数据",
-            logout:"退出", viewDetails:"查看详情", delete:"删除", net:"净额" }
-    };
-    let currentLang = localStorage.getItem('lang') || 'en';
-    let rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
-    let entries = JSON.parse(localStorage.getItem('entries') || '{}');
-    let currentRoomId = null;
-
-    function translatePage() {
-      document.querySelectorAll('[data-translate]').forEach(el => {
-        const key = el.getAttribute('data-translate');
-        if (translations[currentLang] && translations[currentLang][key]) {
-          el.textContent = translations[currentLang][key];
-        }
-      });
-    }
-    function setLang(lang) {
-      currentLang = lang;
-      localStorage.setItem('lang', lang);
-      translatePage();
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      translatePage();
-      if (localStorage.getItem('isLoggedIn') === 'true') showPage('roomsPage');
-    });
-    document.getElementById('loginForm').addEventListener('submit', e => {
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      const u = document.getElementById('username').value;
-      const p = document.getElementById('password').value;
-      const rm = document.getElementById('rememberMe').checked;
-      if (u==='admin'&&p==='0000') {
-        localStorage.setItem('isLoggedIn','true');
-        if (rm) localStorage.setItem('rememberLogin','true');
-        showPage('roomsPage');
+      var u = document.getElementById('username').value;
+      var p = document.getElementById('password').value;
+      if (u==='admin' && p==='0000') {
+        document.getElementById('loginOverlay').style.display='none';
       } else alert('Invalid credentials');
     });
-    function showPage(id) {
+    // Page navigation
+    function showPage(id){
       document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-      if (id==='roomsPage') loadRooms();
-      if (id==='summaryPage') renderSummary();
     }
-    function saveRooms() { localStorage.setItem('rooms', JSON.stringify(rooms)); }
-    function saveEntries() { localStorage.setItem('entries', JSON.stringify(entries)); }
-    function loadRooms() {
-      const list = document.getElementById('roomsList');
-      list.innerHTML='';
-      rooms.forEach(r=>{
-        const card=document.createElement('div');
-        card.className='card';
-        card.innerHTML=`<strong>${translations[currentLang].roomNumber}:</strong> ${r.roomNumber}<br>
-                        <strong>${translations[currentLang].project}:</strong> ${r.project}<br>
-                        <button class="btn" onclick="showRoomDetail(${r.id})" data-translate="viewDetails">View</button>`;
-        list.appendChild(card);
-      });
-    }
-    document.getElementById('addRoomForm').addEventListener('submit', e=>{
-      e.preventDefault();
-      const nr={ id:Date.now(), project:document.getElementById('project').value,
-        roomNumber:document.getElementById('roomNumber').value,
-        startDate:document.getElementById('startDate').value,
-        endDate:document.getElementById('endDate').value,
-        monthlyRent:parseInt(document.getElementById('monthlyRent').value),
-        dueDate:document.getElementById('dueDate').value,
-        deposit:parseInt(document.getElementById('deposit').value) };
-      rooms.push(nr); saveRooms(); e.target.reset(); showPage('roomsPage');
-    });
-    function showRoomDetail(id) {
-      currentRoomId=id; const r=rooms.find(x=>x.id===id);
-      document.getElementById('roomInfo').innerHTML=`<strong>${translations[currentLang].roomNumber}:</strong> ${r.roomNumber}<br>
-        <strong>${translations[currentLang].project}:</strong> ${r.project}<br>
-        <strong>${translations[currentLang].startDate}:</strong> ${r.startDate||'-'}<br>
-        <strong>${translations[currentLang].endDate}:</strong> ${r.endDate||'-'}`;
-      loadEntries(id); showPage('roomDetailPage');
-    }
-    function loadEntries(id) {
-      const list=document.getElementById('entriesList'); list.innerHTML='';
-      (entries[id]||[]).forEach((e,i)=>{
-        const c=document.createElement('div'); c.className='card';
-        const dt=new Date(e.date).toLocaleDateString();
-        c.innerHTML=`<strong>${translations[currentLang][e.type]}</strong> (${dt}): ${e.description} – ฿${e.amount.toLocaleString()}
-          <button class="btn" onclick="deleteEntry(${id},${i})" data-translate="delete">×</button>`;
-        list.appendChild(c);
-      });
-    }
-    document.getElementById('entryForm').addEventListener('submit', e=>{
-      e.preventDefault();
-      const type=document.getElementById('entryType').value;
-      const desc=document.getElementById('entryDescription').value;
-      const amt=parseInt(document.getElementById('entryAmount').value);
-      entries[currentRoomId]=entries[currentRoomId]||[];
-      entries[currentRoomId].push({type,description:desc,amount:amt,date:new Date().toISOString()});
-      saveEntries(); e.target.reset(); loadEntries(currentRoomId);
-    });
-    function deleteEntry(r,i){ entries[r].splice(i,1); saveEntries(); loadEntries(r); }
-    function renderSummary() {
-      const div=document.getElementById('summaryContent'); let html=`<table class="summary-table"><tr>
-        <th>${translations[currentLang].roomNumber}</th><th>${translations[currentLang].income}</th><th>${translations[currentLang].expense}</th><th>${translations[currentLang].net}</th></tr>`;
-      rooms.forEach(r=>{ const list=entries[r.id]||[]; const inc=list.filter(x=>x.type==='income').reduce((s,x)=>s+x.amount,0);
-        const exp=list.filter(x=>x.type==='expense').reduce((s,x)=>s+x.amount,0);
-        html+=`<tr><td>${r.roomNumber}</td><td>฿${inc.toLocaleString()}</td><td>฿${exp.toLocaleString()}</td><td>฿${(inc-exp).toLocaleString()}</td></tr>`;
-      });
-      html+='</table>'; div.innerHTML=html;
-    }
-    function exportData(){ const blob=new Blob([JSON.stringify({rooms,entries})],{type:'application/json'}); const a=document.createElement('a');
-      a.href=URL.createObjectURL(blob); a.download='smart_rent_data.json'; a.click();
-    }
-    function importData(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=evt=>{
-      const obj=JSON.parse(evt.target.result); rooms=obj.rooms||[]; entries=obj.entries||{}; saveRooms(); localStorage.setItem('entries',JSON.stringify(entries));
-      showPage('roomsPage'); translatePage(); loadRooms();
-    }; r.readAsText(f);
-    }
-    function logout(){ localStorage.removeItem('isLoggedIn'); location.reload(); }
   </script>
 </body>
 </html>
