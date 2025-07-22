@@ -1,164 +1,73 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartRent</title>
+  <title>SmartRent Manager</title>
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #0d1117;
-      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #f2f6ff, #d6e4ff);
+      color: #333;
     }
-    .login-screen, .main {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    .login {
       height: 100vh;
-      padding: 20px;
-    }
-    .login-screen.active, .main.active {
       display: flex;
-    }
-    input {
-      padding: 12px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 6px;
-      width: 100%;
-    }
-    .btn {
-      padding: 12px 20px;
-      margin-top: 12px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-    }
-    .room-card {
-      width: 90%;
-      border-radius: 16px;
-      padding: 16px;
-      margin: 12px 0;
-      color: #fff;
-    }
-    .red { background: linear-gradient(to right, #b31217, #e52d27); }
-    .yellow { background: linear-gradient(to right, #f7971e, #ffd200); }
-    .green { background: linear-gradient(to right, #56ab2f, #a8e063); }
-    .gray { background: #2d2d2d; }
-    .room-status {
-      display: flex;
-      justify-content: space-between;
-    }
-    .bottom-buttons {
-      position: fixed;
-      bottom: 20px;
-      display: flex;
-      gap: 12px;
-    }
-    .bottom-buttons button {
-      flex: 1;
-      padding: 14px;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 16px;
-      border: none;
-      color: white;
-    }
-    .summary-btn {
-      background: linear-gradient(to right, #a18cd1, #fbc2eb);
-    }
-    .settings-btn {
-      background: linear-gradient(to right, #43cea2, #185a9d);
-    }
-    .top-bar {
-      margin-top: 20px;
-      margin-bottom: 12px;
-      width: 90%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .plus {
-      background: linear-gradient(to right, #11998e, #38ef7d);
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      font-size: 24px;
-      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      cursor: pointer;
+      padding: 2rem;
     }
-    h2 {
-      margin-bottom: 6px;
+    .login h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #1a237e;
+    }
+    .login p {
+      max-width: 300px;
+      text-align: center;
+      color: #555;
+    }
+    .login input, .login button {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      width: 250px;
+    }
+    .login input {
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+    .login button {
+      background: linear-gradient(to right, #5c6bc0, #1e88e5);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="login-screen active" id="login">
-    <h2>SmartRent</h2>
-    <p>ระบบจัดการห้องเช่าบนมือถือ</p>
-    <input type="text" id="user" placeholder="Username" />
-    <input type="password" id="pass" placeholder="Password" />
-    <button class="btn" onclick="login()">Login</button>
-  </div>
-
-  <div class="main" id="main">
-    <div class="top-bar">
-      <h3>All Rooms</h3>
-      <div class="plus" onclick="alert('เพิ่มห้อง')">+</div>
-    </div>
-
-    <div class="room-card red">
-      <div class="room-status">
-        <div><strong>101</strong> Expiring soon<br/>Rent: $1,500</div>
-        <div>- $500</div>
-      </div>
-    </div>
-
-    <div class="room-card yellow">
-      <div class="room-status">
-        <div><strong>102</strong> Overdue<br/>Rent: $1,700</div>
-        <div>- $200</div>
-      </div>
-    </div>
-
-    <div class="room-card green">
-      <div class="room-status">
-        <div><strong>103</strong> Occupied<br/>Rent: $1,200</div>
-        <div>+ $0</div>
-      </div>
-    </div>
-
-    <div class="room-card gray">
-      <div class="room-status">
-        <div><strong>104</strong> Vacant<br/>Rent: —</div>
-        <div>+ $0</div>
-      </div>
-    </div>
-
-    <div class="bottom-buttons" style="width: 90%;">
-      <button class="summary-btn" onclick="alert('Summary')">Summary</button>
-      <button class="settings-btn" onclick="alert('Settings')">Settings</button>
-    </div>
+  <div class="login">
+    <h1>SmartRent Manager</h1>
+    <p>ระบบบริหารห้องเช่าอัจฉริยะ<br>รองรับมือถือ, ใช้งานง่าย, ไม่ต้องต่อเซิร์ฟเวอร์</p>
+    <input type="text" placeholder="ชื่อผู้ใช้" id="username" />
+    <input type="password" placeholder="รหัสผ่าน" id="password" />
+    <button onclick="login()">เข้าสู่ระบบ</button>
   </div>
 
   <script>
     function login() {
-      const u = document.getElementById("user").value;
-      const p = document.getElementById("pass").value;
+      const u = document.getElementById("username").value;
+      const p = document.getElementById("password").value;
       if (u === "admin" && p === "0000") {
-        document.getElementById("login").classList.remove("active");
-        document.getElementById("main").classList.add("active");
+        localStorage.setItem("loggedIn", "true");
+        window.location.href = "#rooms";
+        alert("ล็อกอินสำเร็จ!");
       } else {
-        alert("Invalid credentials!");
+        alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       }
     }
   </script>
