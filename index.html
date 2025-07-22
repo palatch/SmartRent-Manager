@@ -1,1080 +1,166 @@
+
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการห้องเช่า</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #121212, #1e1e1e);
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .page {
-            display: none;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .header .subtitle {
-            font-size: 14px;
-            color: #ccc;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .add-btn {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-
-        .add-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .add-btn:active {
-            transform: scale(0.95);
-        }
-
-        .card {
-            background: linear-gradient(135deg, #2a2a2a, #1f1f1f);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid #333;
-        }
-
-        .card:hover {
-            background: linear-gradient(135deg, #333, #2a2a2a);
-            transform: translateY(-2px);
-        }
-
-        .card.red { border-left: 4px solid #ff4757; }
-        .card.yellow { border-left: 4px solid #ffa502; }
-        .card.green { border-left: 4px solid #2ed573; }
-        .card.gray { border-left: 4px solid #747d8c; }
-
-        .room-number {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .room-status {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 10px;
-        }
-
-        .room-rent {
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .room-diff {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .room-diff.positive { color: #2ed573; }
-        .room-diff.negative { color: #ff4757; }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #ddd;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #444;
-            border-radius: 8px;
-            background: #2a2a2a;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #0072ff;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin: 5px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #444;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #ff4757;
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .footer-buttons {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-        }
-
-        .footer-buttons .btn {
-            background: linear-gradient(135deg, #9d50bb, #6e48aa);
-            color: white;
-            min-width: 120px;
-        }
-
-        .section {
-            background: #2a2a2a;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .section h3 {
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        .entry-list {
-            margin-top: 15px;
-        }
-
-        .entry-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #1f1f1f;
-            border-radius: 6px;
-            margin-bottom: 8px;
-        }
-
-        .entry-info {
-            flex: 1;
-        }
-
-        .entry-amount {
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        .delete-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #2a2a2a;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .table th,
-        .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #444;
-        }
-
-        .table th {
-            background: #1f1f1f;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .table tbody tr:hover {
-            background: #333;
-        }
-
-        .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #121212, #1e1e1e);
-        }
-
-        .login-box {
-            background: linear-gradient(135deg, #2a2a2a, #1f1f1f);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-title {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 30px;
-        }
-
-        .app-info {
-            display: none;
-            background: #1f1f1f;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .app-info ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .app-info li {
-            padding: 5px 0;
-            color: #ccc;
-        }
-
-        .app-info li:before {
-            content: "•";
-            color: #0072ff;
-            margin-right: 10px;
-        }
-
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #444;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 10px;
-            }
-            
-            .header h1 {
-                font-size: 24px;
-            }
-            
-            .add-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 20px;
-            }
-            
-            .footer-buttons {
-                flex-direction: column;
-                width: calc(100% - 40px);
-            }
-            
-            .footer-buttons .btn {
-                width: 100%;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartRent</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0d1117;
+      color: #fff;
+    }
+    .login-screen, .main {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+    .login-screen.active, .main.active {
+      display: flex;
+    }
+    input {
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      width: 100%;
+    }
+    .btn {
+      padding: 12px 20px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    .room-card {
+      width: 90%;
+      border-radius: 16px;
+      padding: 16px;
+      margin: 12px 0;
+      color: #fff;
+    }
+    .red { background: linear-gradient(to right, #b31217, #e52d27); }
+    .yellow { background: linear-gradient(to right, #f7971e, #ffd200); }
+    .green { background: linear-gradient(to right, #56ab2f, #a8e063); }
+    .gray { background: #2d2d2d; }
+    .room-status {
+      display: flex;
+      justify-content: space-between;
+    }
+    .bottom-buttons {
+      position: fixed;
+      bottom: 20px;
+      display: flex;
+      gap: 12px;
+    }
+    .bottom-buttons button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 16px;
+      border: none;
+      color: white;
+    }
+    .summary-btn {
+      background: linear-gradient(to right, #a18cd1, #fbc2eb);
+    }
+    .settings-btn {
+      background: linear-gradient(to right, #43cea2, #185a9d);
+    }
+    .top-bar {
+      margin-top: 20px;
+      margin-bottom: 12px;
+      width: 90%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .plus {
+      background: linear-gradient(to right, #11998e, #38ef7d);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    h2 {
+      margin-bottom: 6px;
+    }
+  </style>
 </head>
 <body>
-    <!-- Login Page -->
-    <div id="loginPage" class="page active">
-        <div class="login-container">
-            <div class="login-box">
-                <h1 class="login-title">ระบบจัดการห้องเช่า</h1>
-                <div class="form-group">
-                    <label>ชื่อผู้ใช้</label>
-                    <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้">
-                </div>
-                <div class="form-group">
-                    <label>รหัสผ่าน</label>
-                    <input type="password" id="password" placeholder="กรอกรหัสผ่าน">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin: 10px 0;" onclick="login()">เข้าสู่ระบบ</button>
-                <button class="btn btn-secondary" style="width: 100%;" onclick="toggleAppInfo()">ข้อมูลโปรแกรม</button>
-                
-                <div id="appInfo" class="app-info">
-                    <ul>
-                        <li>จัดการข้อมูลห้องเช่าและสัญญา</li>
-                        <li>บันทึกรายรับ-รายจ่ายแต่ละห้อง</li>
-                        <li>สรุปยอดและรายงานภาพรวม</li>
-                        <li>ส่งออกและนำเข้าข้อมูล CSV</li>
-                        <li>แจ้งเตือนสัญญาที่ใกล้หมดอายุ</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+  <div class="login-screen active" id="login">
+    <h2>SmartRent</h2>
+    <p>ระบบจัดการห้องเช่าบนมือถือ</p>
+    <input type="text" id="user" placeholder="Username" />
+    <input type="password" id="pass" placeholder="Password" />
+    <button class="btn" onclick="login()">Login</button>
+  </div>
+
+  <div class="main" id="main">
+    <div class="top-bar">
+      <h3>All Rooms</h3>
+      <div class="plus" onclick="alert('เพิ่มห้อง')">+</div>
     </div>
 
-    <!-- Dashboard Page -->
-    <div id="dashboardPage" class="page">
-        <div class="container">
-            <div class="header">
-                <div class="subtitle">แดชบอร์ด</div>
-                <h1>ระบบจัดการห้องเช่า</h1>
-                <button class="add-btn" onclick="showAddRoom()">+</button>
-            </div>
-            <div id="roomsList"></div>
-        </div>
-        <div class="footer-buttons">
-            <button class="btn" onclick="showSummary()">สรุป</button>
-            <button class="btn" onclick="showSettings()">ตั้งค่า</button>
-        </div>
+    <div class="room-card red">
+      <div class="room-status">
+        <div><strong>101</strong> Expiring soon<br/>Rent: $1,500</div>
+        <div>- $500</div>
+      </div>
     </div>
 
-    <!-- Add/Edit Room Page -->
-    <div id="addRoomPage" class="page">
-        <button class="back-btn" onclick="showDashboard()">← กลับ</button>
-        <div class="container">
-            <div class="header">
-                <h1>เพิ่ม / แก้ไขห้อง</h1>
-            </div>
-            <form id="roomForm">
-                <div class="form-group">
-                    <label>โครงการ</label>
-                    <input type="text" id="project" required>
-                </div>
-                <div class="form-group">
-                    <label>เลขห้อง</label>
-                    <input type="text" id="roomNumber" required>
-                </div>
-                <div class="form-group">
-                    <label>วันที่เริ่มสัญญา</label>
-                    <input type="date" id="startDate">
-                </div>
-                <div class="form-group">
-                    <label>วันที่สิ้นสุดสัญญา</label>
-                    <input type="date" id="endDate">
-                </div>
-                <div class="form-group">
-                    <label>ค่าเช่า (บาท)</label>
-                    <input type="number" id="monthlyRent" required>
-                </div>
-                <div class="form-group">
-                    <label>วันครบกำหนด</label>
-                    <input type="number" id="dueDate" min="1" max="31" required>
-                </div>
-                <div class="form-group">
-                    <label>เงินประกัน (บาท)</label>
-                    <input type="number" id="deposit" required>
-                </div>
-                <div style="text-align: center; margin-top: 30px;">
-                    <button type="submit" class="btn btn-primary">บันทึก</button>
-                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">ยกเลิก</button>
-                </div>
-            </form>
-        </div>
+    <div class="room-card yellow">
+      <div class="room-status">
+        <div><strong>102</strong> Overdue<br/>Rent: $1,700</div>
+        <div>- $200</div>
+      </div>
     </div>
 
-    <!-- Room Detail Page -->
-    <div id="roomDetailPage" class="page">
-        <button class="back-btn" onclick="showDashboard()">← กลับ</button>
-        <div class="container">
-            <div class="header">
-                <h1>รายละเอียดห้อง</h1>
-            </div>
-            
-            <!-- Room Edit Form -->
-            <div class="section">
-                <form id="roomEditForm">
-                    <div class="form-group">
-                        <label>โครงการ</label>
-                        <input type="text" id="editProject" required>
-                    </div>
-                    <div class="form-group">
-                        <label>เลขห้อง</label>
-                        <input type="text" id="editRoomNumber" required>
-                    </div>
-                    <div class="form-group">
-                        <label>วันที่เริ่มสัญญา</label>
-                        <input type="date" id="editStartDate">
-                    </div>
-                    <div class="form-group">
-                        <label>วันที่สิ้นสุดสัญญา</label>
-                        <input type="date" id="editEndDate">
-                    </div>
-                    <div class="form-group">
-                        <label>ค่าเช่า (บาท)</label>
-                        <input type="number" id="editMonthlyRent" required>
-                    </div>
-                    <div class="form-group">
-                        <label>วันครบกำหนด</label>
-                        <input type="number" id="editDueDate" min="1" max="31" required>
-                    </div>
-                    <div class="form-group">
-                        <label>เงินประกัน (บาท)</label>
-                        <input type="number" id="editDeposit" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">อัปเดต</button>
-                    <button type="button" class="btn btn-danger" onclick="deleteRoom()">ลบห้อง</button>
-                </form>
-            </div>
-
-            <!-- Income Section -->
-            <div class="section">
-                <h3>เพิ่มรายรับ</h3>
-                <div class="form-group">
-                    <select id="incomeType">
-                        <option value="ค่าเช่า">ค่าเช่า</option>
-                        <option value="ค่าปรับ">ค่าปรับ</option>
-                        <option value="ค่าประกัน">ค่าประกัน</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="number" id="incomeAmount" placeholder="จำนวนเงิน">
-                </div>
-                <button class="btn btn-primary" onclick="addIncome()">เพิ่มรายรับ</button>
-                
-                <div id="incomeList" class="entry-list"></div>
-            </div>
-
-            <!-- Expense Section -->
-            <div class="section">
-                <h3>เพิ่มรายจ่าย</h3>
-                <div class="form-group">
-                    <input type="text" id="expenseDesc" placeholder="รายละเอียด">
-                </div>
-                <div class="form-group">
-                    <input type="number" id="expenseAmount" placeholder="จำนวนเงิน">
-                </div>
-                <button class="btn btn-primary" onclick="addExpense()">เพิ่มรายจ่าย</button>
-                
-                <div id="expenseList" class="entry-list"></div>
-            </div>
-        </div>
+    <div class="room-card green">
+      <div class="room-status">
+        <div><strong>103</strong> Occupied<br/>Rent: $1,200</div>
+        <div>+ $0</div>
+      </div>
     </div>
 
-    <!-- Summary Page -->
-    <div id="summaryPage" class="page">
-        <button class="back-btn" onclick="showDashboard()">← กลับ</button>
-        <div class="container">
-            <div class="header">
-                <h1>สรุปยอด</h1>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="table" id="summaryTable">
-                    <thead>
-                        <tr>
-                            <th>เลขห้อง</th>
-                            <th>ค่าเช่า</th>
-                            <th>ค่าปรับ</th>
-                            <th>ค่าประกัน</th>
-                            <th>รายรับรวม</th>
-                            <th>รายจ่ายรวม</th>
-                            <th>คงเหลือ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="summaryTableBody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="room-card gray">
+      <div class="room-status">
+        <div><strong>104</strong> Vacant<br/>Rent: —</div>
+        <div>+ $0</div>
+      </div>
     </div>
 
-    <!-- Settings Page -->
-    <div id="settingsPage" class="page">
-        <button class="back-btn" onclick="showDashboard()">← กลับ</button>
-        <div class="container">
-            <div class="header">
-                <h1>ตั้งค่า</h1>
-            </div>
-            <div class="section">
-                <button class="btn btn-primary" onclick="exportCSV()" style="width: 100%; margin-bottom: 15px;">ส่งออก CSV</button>
-                <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
-                <button class="btn btn-secondary" onclick="document.getElementById('csvFileInput').click()" style="width: 100%;">นำเข้า CSV</button>
-            </div>
-        </div>
+    <div class="bottom-buttons" style="width: 90%;">
+      <button class="summary-btn" onclick="alert('Summary')">Summary</button>
+      <button class="settings-btn" onclick="alert('Settings')">Settings</button>
     </div>
+  </div>
 
-    <script>
-        // Data structures
-        let rooms = [];
-        let entries = {};
-        let currentEditingRoomId = null;
-
-        // Load data from localStorage
-        function loadData() {
-            const storedRooms = localStorage.getItem('rooms');
-            const storedEntries = localStorage.getItem('entries');
-            
-            if (storedRooms) {
-                rooms = JSON.parse(storedRooms);
-            }
-            
-            if (storedEntries) {
-                entries = JSON.parse(storedEntries);
-            }
-        }
-
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('rooms', JSON.stringify(rooms));
-            localStorage.setItem('entries', JSON.stringify(entries));
-        }
-
-        // Page navigation
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            document.getElementById(pageId).classList.add('active');
-        }
-
-        // Login functionality
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            if (username === 'admin' && password === '0000') {
-                localStorage.setItem('loggedIn', 'true');
-                showDashboard();
-            } else {
-                alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
-            }
-        }
-
-        function toggleAppInfo() {
-            const appInfo = document.getElementById('appInfo');
-            appInfo.style.display = appInfo.style.display === 'none' || !appInfo.style.display ? 'block' : 'none';
-        }
-
-        // Dashboard functionality
-        function showDashboard() {
-            showPage('dashboardPage');
-            renderRoomsList();
-        }
-
-        function renderRoomsList() {
-            const roomsList = document.getElementById('roomsList');
-            roomsList.innerHTML = '';
-
-            rooms.forEach(room => {
-                const roomElement = document.createElement('div');
-                roomElement.className = `card ${getRoomStatus(room).color}`;
-                roomElement.onclick = () => showRoomDetail(room.id);
-
-                const status = getRoomStatus(room);
-                const netAmount = calculateRoomNet(room.id);
-
-                roomElement.innerHTML = `
-                    <div class="room-number">${room.roomNumber}</div>
-                    <div class="room-status">${status.text}</div>
-                    <div class="room-rent">ค่าเช่า: ${formatMoney(room.monthlyRent)} บาท</div>
-                    <div class="room-diff ${netAmount >= 0 ? 'positive' : 'negative'}">${netAmount >= 0 ? '+' : ''}${formatMoney(netAmount)}</div>
-                `;
-
-                roomsList.appendChild(roomElement);
-            });
-        }
-
-        function getRoomStatus(room) {
-            if (!room.endDate) {
-                return { color: 'gray', text: 'ว่าง' };
-            }
-
-            const endDate = new Date(room.endDate);
-            const today = new Date();
-            const threeMonthsFromNow = new Date();
-            threeMonthsFromNow.setMonth(today.getMonth() + 3);
-
-            if (endDate <= threeMonthsFromNow) {
-                return { color: 'red', text: 'สัญญาจะหมด' };
-            }
-
-            const roomEntries = entries[room.id];
-            if (roomEntries && roomEntries.incomes) {
-                const rentIncome = roomEntries.incomes
-                    .filter(income => income.type === 'ค่าเช่า')
-                    .reduce((sum, income) => sum + income.amount, 0);
-                
-                if (rentIncome < room.monthlyRent) {
-                    return { color: 'yellow', text: 'ค้างชำระ' };
-                }
-            }
-
-            if (roomEntries && roomEntries.incomes && roomEntries.incomes.length > 0) {
-                return { color: 'green', text: 'มีผู้เช่า' };
-            }
-
-            return { color: 'gray', text: 'ว่าง' };
-        }
-
-        function calculateRoomNet(roomId) {
-            const roomEntries = entries[roomId];
-            if (!roomEntries) return 0;
-
-            const totalIncome = (roomEntries.incomes || []).reduce((sum, income) => sum + income.amount, 0);
-            const totalExpense = (roomEntries.expenses || []).reduce((sum, expense) => sum + expense.amount, 0);
-
-            return totalIncome - totalExpense;
-        }
-
-        // Add/Edit Room functionality
-        function showAddRoom() {
-            currentEditingRoomId = null;
-            document.getElementById('roomForm').reset();
-            showPage('addRoomPage');
-        }
-
-        document.getElementById('roomForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const roomData = {
-                id: currentEditingRoomId || Date.now().toString(),
-                project: document.getElementById('project').value,
-                roomNumber: document.getElementById('roomNumber').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                monthlyRent: parseFloat(document.getElementById('monthlyRent').value),
-                dueDate: parseInt(document.getElementById('dueDate').value),
-                deposit: parseFloat(document.getElementById('deposit').value)
-            };
-
-            if (currentEditingRoomId) {
-                const index = rooms.findIndex(room => room.id === currentEditingRoomId);
-                if (index !== -1) {
-                    rooms[index] = roomData;
-                }
-            } else {
-                rooms.push(roomData);
-                if (!entries[roomData.id]) {
-                    entries[roomData.id] = { incomes: [], expenses: [] };
-                }
-            }
-
-            saveData();
-            showDashboard();
-        });
-
-        // Room Detail functionality
-        function showRoomDetail(roomId) {
-            currentEditingRoomId = roomId;
-            const room = rooms.find(r => r.id === roomId);
-            
-            if (room) {
-                // Fill edit form
-                document.getElementById('editProject').value = room.project;
-                document.getElementById('editRoomNumber').value = room.roomNumber;
-                document.getElementById('editStartDate').value = room.startDate || '';
-                document.getElementById('editEndDate').value = room.endDate || '';
-                document.getElementById('editMonthlyRent').value = room.monthlyRent;
-                document.getElementById('editDueDate').value = room.dueDate;
-                document.getElementById('editDeposit').value = room.deposit;
-
-                renderIncomeList(roomId);
-                renderExpenseList(roomId);
-                showPage('roomDetailPage');
-            }
-        }
-
-        document.getElementById('roomEditForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const roomData = {
-                id: currentEditingRoomId,
-                project: document.getElementById('editProject').value,
-                roomNumber: document.getElementById('editRoomNumber').value,
-                startDate: document.getElementById('editStartDate').value,
-                endDate: document.getElementById('editEndDate').value,
-                monthlyRent: parseFloat(document.getElementById('editMonthlyRent').value),
-                dueDate: parseInt(document.getElementById('editDueDate').value),
-                deposit: parseFloat(document.getElementById('editDeposit').value)
-            };
-
-            const index = rooms.findIndex(room => room.id === currentEditingRoomId);
-            if (index !== -1) {
-                rooms[index] = roomData;
-                saveData();
-                alert('อัปเดตข้อมูลห้องเรียบร้อยแล้ว');
-            }
-        });
-
-        function deleteRoom() {
-            if (confirm('คุณต้องการลบห้องนี้หรือไม่?')) {
-                rooms = rooms.filter(room => room.id !== currentEditingRoomId);
-                delete entries[currentEditingRoomId];
-                saveData();
-                showDashboard();
-            }
-        }
-
-        function addIncome() {
-            const type = document.getElementById('incomeType').value;
-            const amount = parseFloat(document.getElementById('incomeAmount').value);
-            
-            if (amount && currentEditingRoomId) {
-                if (!entries[currentEditingRoomId]) {
-                    entries[currentEditingRoomId] = { incomes: [], expenses: [] };
-                }
-                
-                entries[currentEditingRoomId].incomes.push({ type, amount });
-                document.getElementById('incomeAmount').value = '';
-                saveData();
-                renderIncomeList(currentEditingRoomId);
-            }
-        }
-
-        function addExpense() {
-            const desc = document.getElementById('expenseDesc').value;
-            const amount = parseFloat(document.getElementById('expenseAmount').value);
-            
-            if (desc && amount && currentEditingRoomId) {
-                if (!entries[currentEditingRoomId]) {
-                    entries[currentEditingRoomId] = { incomes: [], expenses: [] };
-                }
-                
-                entries[currentEditingRoomId].expenses.push({ desc, amount });
-                document.getElementById('expenseDesc').value = '';
-                document.getElementById('expenseAmount').value = '';
-                saveData();
-                renderExpenseList(currentEditingRoomId);
-            }
-        }
-
-        function renderIncomeList(roomId) {
-            const incomeList = document.getElementById('incomeList');
-            incomeList.innerHTML = '';
-            
-            const roomEntries = entries[roomId];
-            if (roomEntries && roomEntries.incomes) {
-                roomEntries.incomes.forEach((income, index) => {
-                    const incomeElement = document.createElement('div');
-                    incomeElement.className = 'entry-item';
-                    incomeElement.innerHTML = `
-                        <div class="entry-info">${income.type}</div>
-                        <div class="entry-amount">${formatMoney(income.amount)} บาท</div>
-                        <button class="delete-btn" onclick="deleteIncome(${index})">ลบ</button>
-                    `;
-                    incomeList.appendChild(incomeElement);
-                });
-            }
-        }
-
-        function renderExpenseList(roomId) {
-            const expenseList = document.getElementById('expenseList');
-            expenseList.innerHTML = '';
-            
-            const roomEntries = entries[roomId];
-            if (roomEntries && roomEntries.expenses) {
-                roomEntries.expenses.forEach((expense, index) => {
-                    const expenseElement = document.createElement('div');
-                    expenseElement.className = 'entry-item';
-                    expenseElement.innerHTML = `
-                        <div class="entry-info">${expense.desc}</div>
-                        <div class="entry-amount">${formatMoney(expense.amount)} บาท</div>
-                        <button class="delete-btn" onclick="deleteExpense(${index})">ลบ</button>
-                    `;
-                    expenseList.appendChild(expenseElement);
-                });
-            }
-        }
-
-        function deleteIncome(index) {
-            if (currentEditingRoomId && entries[currentEditingRoomId] && entries[currentEditingRoomId].incomes) {
-                entries[currentEditingRoomId].incomes.splice(index, 1);
-                saveData();
-                renderIncomeList(currentEditingRoomId);
-            }
-        }
-
-        function deleteExpense(index) {
-            if (currentEditingRoomId && entries[currentEditingRoomId] && entries[currentEditingRoomId].expenses) {
-                entries[currentEditingRoomId].expenses.splice(index, 1);
-                saveData();
-                renderExpenseList(currentEditingRoomId);
-            }
-        }
-
-        // Summary functionality
-        function showSummary() {
-            showPage('summaryPage');
-            renderSummaryTable();
-        }
-
-        function renderSummaryTable() {
-            const tableBody = document.getElementById('summaryTableBody');
-            tableBody.innerHTML = '';
-
-            let totalRent = 0, totalFine = 0, totalDeposit = 0, totalIncome = 0, totalExpense = 0, totalNet = 0;
-
-            rooms.forEach(room => {
-                const roomEntries = entries[room.id] || { incomes: [], expenses: [] };
-                
-                const rentSum = roomEntries.incomes.filter(i => i.type === 'ค่าเช่า').reduce((sum, i) => sum + i.amount, 0);
-                const fineSum = roomEntries.incomes.filter(i => i.type === 'ค่าปรับ').reduce((sum, i) => sum + i.amount, 0);
-                const depositSum = roomEntries.incomes.filter(i => i.type === 'ค่าประกัน').reduce((sum, i) => sum + i.amount, 0);
-                const incomeSum = roomEntries.incomes.reduce((sum, i) => sum + i.amount, 0);
-                const expenseSum = roomEntries.expenses.reduce((sum, e) => sum + e.amount, 0);
-                const netSum = incomeSum - expenseSum;
-
-                totalRent += rentSum;
-                totalFine += fineSum;
-                totalDeposit += depositSum;
-                totalIncome += incomeSum;
-                totalExpense += expenseSum;
-                totalNet += netSum;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${room.roomNumber}</td>
-                    <td>${formatMoney(rentSum)}</td>
-                    <td>${formatMoney(fineSum)}</td>
-                    <td>${formatMoney(depositSum)}</td>
-                    <td>${formatMoney(incomeSum)}</td>
-                    <td>${formatMoney(expenseSum)}</td>
-                    <td class="${netSum >= 0 ? 'positive' : 'negative'}">${formatMoney(netSum)}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-
-            // Add total row
-            const totalRow = document.createElement('tr');
-            totalRow.style.fontWeight = 'bold';
-            totalRow.style.backgroundColor = '#333';
-            totalRow.innerHTML = `
-                <td>รวม</td>
-                <td>${formatMoney(totalRent)}</td>
-                <td>${formatMoney(totalFine)}</td>
-                <td>${formatMoney(totalDeposit)}</td>
-                <td>${formatMoney(totalIncome)}</td>
-                <td>${formatMoney(totalExpense)}</td>
-                <td class="${totalNet >= 0 ? 'positive' : 'negative'}">${formatMoney(totalNet)}</td>
-            `;
-            tableBody.appendChild(totalRow);
-        }
-
-        // Settings functionality
-        function showSettings() {
-            showPage('settingsPage');
-        }
-
-        function exportCSV() {
-            const headers = ['เลขห้อง', 'โครงการ', 'วันที่เริ่มสัญญา', 'วันที่สิ้นสุดสัญญา', 'ค่าเช่า', 'วันครบกำหนด', 'เงินประกัน', 'ประเภท', 'หมวดรายรับ', 'รายละเอียดรายจ่าย', 'จำนวนเงิน'];
-            let csvContent = '\uFEFF' + headers.join(',') + '\n';
-
-            rooms.forEach(room => {
-                const roomEntries = entries[room.id] || { incomes: [], expenses: [] };
-                
-                // Add incomes
-                roomEntries.incomes.forEach(income => {
-                    csvContent += `${room.roomNumber},"${room.project}",${room.startDate || ''},${room.endDate || ''},${room.monthlyRent},${room.dueDate},${room.deposit},รายรับ,"${income.type}",,${income.amount}\n`;
-                });
-
-                // Add expenses
-                roomEntries.expenses.forEach(expense => {
-                    csvContent += `${room.roomNumber},"${room.project}",${room.startDate || ''},${room.endDate || ''},${room.monthlyRent},${room.dueDate},${room.deposit},รายจ่าย,,"${expense.desc}",${expense.amount}\n`;
-                });
-
-                // If no entries, add room data only
-                if (roomEntries.incomes.length === 0 && roomEntries.expenses.length === 0) {
-                    csvContent += `${room.roomNumber},"${room.project}",${room.startDate || ''},${room.endDate || ''},${room.monthlyRent},${room.dueDate},${room.deposit},,,0\n`;
-                }
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'rooms_data.csv');
-            link.click();
-        }
-
-        function importCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const csv = e.target.result;
-                    const lines = csv.split('\n');
-                    const headers = lines[0].replace('\uFEFF', '').split(',');
-                    
-                    rooms = [];
-                    entries = {};
-                    const roomsMap = new Map();
-
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        const values = parseCSVLine(line);
-                        if (values.length < headers.length) continue;
-
-                        const roomNumber = values[0];
-                        const project = values[1].replace(/"/g, '');
-                        const startDate = values[2];
-                        const endDate = values[3];
-                        const monthlyRent = parseFloat(values[4]) || 0;
-                        const dueDate = parseInt(values[5]) || 1;
-                        const deposit = parseFloat(values[6]) || 0;
-                        const type = values[7];
-                        const incomeType = values[8] ? values[8].replace(/"/g, '') : '';
-                        const expenseDesc = values[9] ? values[9].replace(/"/g, '') : '';
-                        const amount = parseFloat(values[10]) || 0;
-
-                        let roomId = roomsMap.get(roomNumber);
-                        
-                        if (!roomId) {
-                            roomId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                            roomsMap.set(roomNumber, roomId);
-                            
-                            rooms.push({
-                                id: roomId,
-                                project: project,
-                                roomNumber: roomNumber,
-                                startDate: startDate,
-                                endDate: endDate,
-                                monthlyRent: monthlyRent,
-                                dueDate: dueDate,
-                                deposit: deposit
-                            });
-
-                            entries[roomId] = { incomes: [], expenses: [] };
-                        }
-
-                        if (type === 'รายรับ' && incomeType && amount > 0) {
-                            entries[roomId].incomes.push({ type: incomeType, amount: amount });
-                        } else if (type === 'รายจ่าย' && expenseDesc && amount > 0) {
-                            entries[roomId].expenses.push({ desc: expenseDesc, amount: amount });
-                        }
-                    }
-
-                    saveData();
-                    alert('นำเข้าข้อมูลเรียบร้อยแล้ว');
-                    showDashboard();
-                } catch (error) {
-                    alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ' + error.message);
-                }
-            };
-            
-            reader.readAsText(file, 'UTF-8');
-        }
-
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"' && (i === 0 || line[i-1] === ',')) {
-                    inQuotes = true;
-                } else if (char === '"' && inQuotes && (i === line.length - 1 || line[i+1] === ',')) {
-                    inQuotes = false;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            
-            result.push(current);
-            return result;
-        }
-
-        // Utility functions
-        function formatMoney(amount) {
-            return new Intl.NumberFormat('th-TH').format(amount);
-        }
-
-        // Initialize app
-        function init() {
-            loadData();
-            
-            // Check if logged in
-            if (localStorage.getItem('loggedIn') === 'true') {
-                showDashboard();
-            } else {
-                showPage('loginPage');
-            }
-        }
-
-        // Start the app
-        init();
-    </script>
+  <script>
+    function login() {
+      const u = document.getElementById("user").value;
+      const p = document.getElementById("pass").value;
+      if (u === "admin" && p === "0000") {
+        document.getElementById("login").classList.remove("active");
+        document.getElementById("main").classList.add("active");
+      } else {
+        alert("Invalid credentials!");
+      }
+    }
+  </script>
 </body>
 </html>
