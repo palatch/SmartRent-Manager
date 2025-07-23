@@ -6,12 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SmartRent Manager</title>
   <style>
-    * {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f2f4f8;
+      background: #f1f5f9;
       color: #333;
     }
     header {
@@ -22,82 +20,106 @@
       font-size: 1.5rem;
       font-weight: bold;
     }
-    .room {
-      background: white;
-      margin: 1rem;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .room span.status {
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
-    .room span.status::before {
-      content: '';
-      display: inline-block;
-      width: 12px;
-      height: 12px;
+    .add-button {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      border: none;
       border-radius: 50%;
-      margin-right: 0.5rem;
-    }
-    .room.normal span.status::before {
-      background: green;
-    }
-    .room.warning span.status::before {
-      background: gold;
-    }
-    .room.alert span.status::before {
-      background: red;
+      width: 45px;
+      height: 45px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
     }
     .bottom-nav {
       position: fixed;
       bottom: 0;
-      left: 0;
       width: 100%;
-      background: white;
       display: flex;
       justify-content: space-around;
-      padding: 0.5rem;
+      background: white;
+      padding: 0.75rem 0;
       box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     }
     .bottom-nav button {
       background: linear-gradient(to right, #4facfe, #00f2fe);
       border: none;
       color: white;
-      padding: 0.75rem 1.5rem;
+      padding: 0.6rem 1.5rem;
       border-radius: 30px;
       font-size: 1rem;
       cursor: pointer;
     }
-    .container {
-      padding-bottom: 70px;
+    .page {
+      display: none;
+      padding: 1rem;
+      padding-bottom: 80px;
+    }
+    .page.active {
+      display: block;
+    }
+    .room {
+      background: white;
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
+
   <header>SmartRent Manager</header>
-  <div class="container">
-    <div class="room normal">
-      <div>ห้อง A101</div>
-      <span class="status">ปกติ</span>
-    </div>
-    <div class="room warning">
-      <div>ห้อง B202</div>
-      <span class="status">ค้างชำระ</span>
-    </div>
-    <div class="room alert">
-      <div>ห้อง C303</div>
-      <span class="status">ใกล้หมดสัญญา</span>
-    </div>
+  <button class="add-button" onclick="showPage('add')">+</button>
+
+  <div id="allrooms" class="page active">
+    <div class="room">ห้อง A101 - ปกติ</div>
+    <div class="room">ห้อง B202 - ค้างชำระ</div>
+    <div class="room">ห้อง C303 - ใกล้หมดสัญญา</div>
   </div>
+
+  <div id="add" class="page">
+    <h2>เพิ่มห้องใหม่</h2>
+    <input type="text" placeholder="เลขห้อง" />
+    <input type="text" placeholder="ชื่อผู้เช่า" />
+    <input type="number" placeholder="ค่าเช่า/เดือน" />
+    <input type="date" />
+    <button onclick="alert('เพิ่มข้อมูลแล้ว')">บันทึก</button>
+  </div>
+
+  <div id="summary" class="page">
+    <h2>สรุปรายรับรายจ่าย</h2>
+    <div class="room">ห้อง A101 - รับ: 6,000 บาท | จ่าย: 500 บาท</div>
+    <div class="room">ห้อง B202 - รับ: 6,500 บาท | จ่าย: 700 บาท</div>
+  </div>
+
+  <div id="settings" class="page">
+    <h2>ตั้งค่าระบบ</h2>
+    <p>ภาษา: <select><option>ไทย</option><option>English</option></select></p>
+    <p><button onclick="alert('ล้างข้อมูลสำเร็จ')">ล้างข้อมูล</button></p>
+  </div>
+
   <div class="bottom-nav">
-    <button onclick="alert('กำลังพัฒนา')">สรุป</button>
-    <button onclick="alert('เปิดหน้าตั้งค่า')">ตั้งค่า</button>
+    <button onclick="showPage('summary')">สรุป</button>
+    <button onclick="showPage('settings')">ตั้งค่า</button>
+    <button onclick="showPage('allrooms')">ห้องทั้งหมด</button>
   </div>
+
+  <script>
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+
 </body>
 </html>
