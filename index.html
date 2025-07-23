@@ -3,79 +3,100 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartRent ระบบบริหารห้องเช่า</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartRent Manager</title>
   <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f2f4f8;
       color: #333;
     }
     header {
-      background: linear-gradient(to right, #6db3f2, #1e69de);
-      color: white;
-      padding: 20px;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      padding: 1rem;
       text-align: center;
-      font-size: 1.5em;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
     }
-    .container {
-      padding: 15px;
-    }
-    .card {
+    .room {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 15px;
-      padding: 15px;
+      margin: 1rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .room span.status {
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
+    .room span.status::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    .room.normal span.status::before {
+      background: green;
+    }
+    .room.warning span.status::before {
+      background: gold;
+    }
+    .room.alert span.status::before {
+      background: red;
     }
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      background: #ffffff;
-      border-top: 1px solid #ccc;
+      background: white;
       display: flex;
       justify-content: space-around;
-      padding: 10px 0;
+      padding: 0.5rem;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     }
     .bottom-nav button {
       background: linear-gradient(to right, #4facfe, #00f2fe);
       border: none;
-      border-radius: 20px;
-      padding: 10px 20px;
       color: white;
-      font-weight: bold;
+      padding: 0.75rem 1.5rem;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
     }
-    .fab {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: linear-gradient(to right, #43e97b, #38f9d7);
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 30px;
-      color: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    .container {
+      padding-bottom: 70px;
     }
   </style>
 </head>
 <body>
   <header>SmartRent Manager</header>
-
-  <div class="container" id="roomList">
-    <div class="card">ห้อง A101 - 🟢 ปกติ</div>
-    <div class="card">ห้อง B202 - 🟡 ค้างชำระ</div>
-    <div class="card">ห้อง C303 - 🔴 ใกล้หมดสัญญา</div>
+  <div class="container">
+    <div class="room normal">
+      <div>ห้อง A101</div>
+      <span class="status">ปกติ</span>
+    </div>
+    <div class="room warning">
+      <div>ห้อง B202</div>
+      <span class="status">ค้างชำระ</span>
+    </div>
+    <div class="room alert">
+      <div>ห้อง C303</div>
+      <span class="status">ใกล้หมดสัญญา</span>
+    </div>
   </div>
-
-  <button class="fab" onclick="alert('เพิ่มห้องใหม่')">＋</button>
-
   <div class="bottom-nav">
-    <button onclick="alert('เปิดหน้าสรุป')">สรุป</button>
+    <button onclick="alert('กำลังพัฒนา')">สรุป</button>
     <button onclick="alert('เปิดหน้าตั้งค่า')">ตั้งค่า</button>
   </div>
 </body>
