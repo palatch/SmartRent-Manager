@@ -1,75 +1,82 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartRent Manager</title>
+  <title>SmartRent ระบบบริหารห้องเช่า</title>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom, #f2f6ff, #d6e4ff);
+      background: #f0f4f8;
       color: #333;
     }
-    .login {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-    }
-    .login h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #1a237e;
-    }
-    .login p {
-      max-width: 300px;
+    header {
+      background: linear-gradient(to right, #6db3f2, #1e69de);
+      color: white;
+      padding: 20px;
       text-align: center;
-      color: #555;
+      font-size: 1.5em;
     }
-    .login input, .login button {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      border: none;
+    .container {
+      padding: 15px;
+    }
+    .card {
+      background: white;
       border-radius: 10px;
-      font-size: 1rem;
-      width: 250px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+      padding: 15px;
     }
-    .login input {
-      background: #fff;
-      border: 1px solid #ccc;
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #ffffff;
+      border-top: 1px solid #ccc;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
     }
-    .login button {
-      background: linear-gradient(to right, #5c6bc0, #1e88e5);
+    .bottom-nav button {
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
       color: white;
       font-weight: bold;
-      cursor: pointer;
+    }
+    .fab {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(to right, #43e97b, #38f9d7);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 30px;
+      color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-  <div class="login">
-    <h1>SmartRent Manager</h1>
-    <p>ระบบบริหารห้องเช่าอัจฉริยะ<br>รองรับมือถือ, ใช้งานง่าย, ไม่ต้องต่อเซิร์ฟเวอร์</p>
-    <input type="text" placeholder="ชื่อผู้ใช้" id="username" />
-    <input type="password" placeholder="รหัสผ่าน" id="password" />
-    <button onclick="login()">เข้าสู่ระบบ</button>
+  <header>SmartRent Manager</header>
+
+  <div class="container" id="roomList">
+    <div class="card">ห้อง A101 - 🟢 ปกติ</div>
+    <div class="card">ห้อง B202 - 🟡 ค้างชำระ</div>
+    <div class="card">ห้อง C303 - 🔴 ใกล้หมดสัญญา</div>
   </div>
 
-  <script>
-    function login() {
-      const u = document.getElementById("username").value;
-      const p = document.getElementById("password").value;
-      if (u === "admin" && p === "0000") {
-        localStorage.setItem("loggedIn", "true");
-        window.location.href = "#rooms";
-        alert("ล็อกอินสำเร็จ!");
-      } else {
-        alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
-      }
-    }
-  </script>
+  <button class="fab" onclick="alert('เพิ่มห้องใหม่')">＋</button>
+
+  <div class="bottom-nav">
+    <button onclick="alert('เปิดหน้าสรุป')">สรุป</button>
+    <button onclick="alert('เปิดหน้าตั้งค่า')">ตั้งค่า</button>
+  </div>
 </body>
 </html>
