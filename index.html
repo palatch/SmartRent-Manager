@@ -1,125 +1,132 @@
-
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SmartRent Manager</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f1f5f9;
+      background: #fdfdfd;
       color: #333;
+      line-height: 1.6;
     }
-    header {
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      padding: 1rem;
-      text-align: center;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: bold;
+
+    header,
+    nav,
+    main,
+    section,
+    footer {
+      padding: 16px;
     }
-    .add-button {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: linear-gradient(to right, #4facfe, #00f2fe);
-      border: none;
-      border-radius: 50%;
-      width: 45px;
-      height: 45px;
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-    }
+
     .bottom-nav {
       position: fixed;
       bottom: 0;
+      left: 0;
       width: 100%;
       display: flex;
       justify-content: space-around;
-      background: white;
-      padding: 0.75rem 0;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      background: #fff;
+      border-top: 1px solid #ccc;
+      z-index: 999;
     }
+
     .bottom-nav button {
-      background: linear-gradient(to right, #4facfe, #00f2fe);
+      flex: 1;
+      padding: 12px;
+      background: none;
       border: none;
+      font-size: 16px;
+    }
+
+    .room-card {
+      margin: 12px;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-red {
+      background-color: #ffe5e5;
+    }
+
+    .status-yellow {
+      background-color: #fff9e5;
+    }
+
+    .status-green {
+      background-color: #e5ffe5;
+    }
+
+    .status-none {
+      background-color: #f0f0f0;
+    }
+
+    .add-room-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #4caf50;
       color: white;
-      padding: 0.6rem 1.5rem;
-      border-radius: 30px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .page {
-      display: none;
-      padding: 1rem;
-      padding-bottom: 80px;
-    }
-    .page.active {
-      display: block;
-    }
-    .room {
-      background: white;
-      margin: 1rem 0;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    input, select {
-      width: 100%;
-      padding: 0.5rem;
-      margin: 0.5rem 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
+
 <body>
+  <header>
+    <h2>SmartRent Manager</h2>
+    <p>ระบบบริหารจัดการห้องเช่าแบบครบวงจร</p>
+  </header>
 
-  <header>SmartRent Manager</header>
-  <button class="add-button" onclick="showPage('add')">+</button>
+  <button class="add-room-btn" onclick="alert('เพิ่มห้อง')">+</button>
 
-  <div id="allrooms" class="page active">
-    <div class="room">ห้อง A101 - ปกติ</div>
-    <div class="room">ห้อง B202 - ค้างชำระ</div>
-    <div class="room">ห้อง C303 - ใกล้หมดสัญญา</div>
-  </div>
+  <main>
+    <section id="allRooms">
+      <h3>ห้องทั้งหมด</h3>
+      <div class="room-card status-red">#101 - ใกล้หมดสัญญา</div>
+      <div class="room-card status-yellow">#102 - ค้างชำระ</div>
+      <div class="room-card status-green">#103 - ปกติ</div>
+      <div class="room-card status-none">#104 - ว่าง</div>
+    </section>
 
-  <div id="add" class="page">
-    <h2>เพิ่มห้องใหม่</h2>
-    <input type="text" placeholder="เลขห้อง" />
-    <input type="text" placeholder="ชื่อผู้เช่า" />
-    <input type="number" placeholder="ค่าเช่า/เดือน" />
-    <input type="date" />
-    <button onclick="alert('เพิ่มข้อมูลแล้ว')">บันทึก</button>
-  </div>
+    <section id="summary" style="display:none">
+      <h3>สรุปรายรับรายจ่าย</h3>
+      <p>ยอดรวมทุกห้อง: 123,456 บาท</p>
+    </section>
 
-  <div id="summary" class="page">
-    <h2>สรุปรายรับรายจ่าย</h2>
-    <div class="room">ห้อง A101 - รับ: 6,000 บาท | จ่าย: 500 บาท</div>
-    <div class="room">ห้อง B202 - รับ: 6,500 บาท | จ่าย: 700 บาท</div>
-  </div>
+    <section id="settings" style="display:none">
+      <h3>ตั้งค่า</h3>
+      <button onclick="alert('Export JSON')">Export ข้อมูล</button>
+      <button onclick="alert('Import JSON')">Import ข้อมูล</button>
+    </section>
+  </main>
 
-  <div id="settings" class="page">
-    <h2>ตั้งค่าระบบ</h2>
-    <p>ภาษา: <select><option>ไทย</option><option>English</option></select></p>
-    <p><button onclick="alert('ล้างข้อมูลสำเร็จ')">ล้างข้อมูล</button></p>
-  </div>
-
-  <div class="bottom-nav">
-    <button onclick="showPage('summary')">สรุป</button>
-    <button onclick="showPage('settings')">ตั้งค่า</button>
-    <button onclick="showPage('allrooms')">ห้องทั้งหมด</button>
-  </div>
+  <nav class="bottom-nav">
+    <button onclick="showSection('allRooms')">ห้องทั้งหมด</button>
+    <button onclick="showSection('summary')">สรุป</button>
+    <button onclick="showSection('settings')">ตั้งค่า</button>
+  </nav>
 
   <script>
-    function showPage(id) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+    function showSection(sectionId) {
+      document.querySelectorAll('main section').forEach(sec => sec.style.display = 'none');
+      document.getElementById(sectionId).style.display = 'block';
     }
   </script>
-
 </body>
+
 </html>
