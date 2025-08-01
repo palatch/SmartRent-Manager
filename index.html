@@ -1,195 +1,194 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SmartRent Manager</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: sans-serif; background: #f4f7fb; color: #333; }
-    input, select, button, textarea {
-      font-family: inherit;
-      font-size: 1rem;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      width: 100%;
-      margin-bottom: 10px;
-    }
-    .hidden { display: none !important; }
-    .container { padding: 16px; max-width: 600px; margin: auto; }
-    .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 12px; }
-    .status-red { border-left: 8px solid #e74c3c; }
-    .status-yellow { border-left: 8px solid #f1c40f; }
-    .status-green { border-left: 8px solid #2ecc71; }
-    .status-gray { border-left: 8px solid #bdc3c7; }
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #fff; box-shadow: 0 -2px 5px rgba(0,0,0,0.1); }
-    .nav button { flex: 1; border: none; background: none; padding: 14px; font-size: 0.9rem; }
-    .nav button.active { background: #e1f0ff; font-weight: bold; }
-    .topbar { text-align: center; padding: 20px 0; font-size: 1.2rem; font-weight: bold; background: #fff; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartRent Pro Mobile</title>
+<style>
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: #f4f6f9;
+  color: #333;
+  padding: 16px;
+  max-width: 600px;
+  margin: auto;
+}
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+}
+button:hover {
+  background: #0056b3;
+}
+.room {
+  background: #fff;
+  padding: 12px;
+  margin: 12px 0;
+  border-left: 6px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.red { border-color: #e74c3c; }
+.yellow { border-color: #f1c40f; }
+.green { border-color: #2ecc71; }
+h2, h3 { color: #007bff; margin-top: 24px; }
+</style>
 </head>
 <body>
-
-<!-- LOGIN -->
-<div id="login" class="container">
-  <h2 class="topbar">เข้าสู่ระบบ</h2>
-  <input type="text" id="username" placeholder="Username" />
-  <input type="password" id="password" placeholder="Password" />
-  <label><input type="checkbox" id="remember"> จำรหัสผ่าน</label>
-  <button onclick="login()">เข้าสู่ระบบ</button>
+<div id="login">
+  <h2>เข้าสู่ระบบ</h2>
+  <input id="u" placeholder="Username" />
+  <input id="p" placeholder="Password" type="password" />
+  <button onclick="login()">Login</button>
 </div>
 
-<!-- DASHBOARD -->
-<div id="app" class="hidden">
-  <div id="content" class="container"></div>
-  <div class="nav">
-    <button onclick="showPage('rooms')" id="navRooms" class="active">ห้องทั้งหมด</button>
-    <button onclick="showPage('add')" id="navAdd">เพิ่มห้อง</button>
-    <button onclick="showPage('summary')" id="navSummary">สรุป</button>
-    <button onclick="showPage('settings')" id="navSettings">ตั้งค่า</button>
-  </div>
+<div id="app" style="display:none">
+  <h2>รายชื่อห้อง</h2>
+  <div id="list"></div>
+
+  <h3>เพิ่มห้อง</h3>
+  <input id="room" placeholder="ห้อง">
+  <input id="tenant" placeholder="ผู้เช่า">
+  <input id="rent" placeholder="ค่าเช่า" type="number">
+  <input id="end" placeholder="วันสิ้นสุดสัญญา" type="date">
+  <input id="due" placeholder="ครบกำหนดชำระ" type="date">
+  <button onclick="add()">บันทึก</button>
+
+  <h3>สำรองข้อมูล</h3>
+  <button onclick="exportData()">Export</button>
+  <input type="file" onchange="importData(event)">
+</div>
+
+<div id="detail" style="display:none">
+  <h2 id="detailTitle">รายละเอียดห้อง</h2>
+  <div id="detailBody"></div>
+  <button onclick="closeDetail()">← กลับ</button>
 </div>
 
 <script>
-  const user = { username: 'admin', password: '0000' };
-  const storageKey = 'smartrent-data';
-  const appData = JSON.parse(localStorage.getItem(storageKey) || '{"rooms":[]}');
+let data = JSON.parse(localStorage.getItem('smartrent') || '{"rooms":[]}');
+let selected = -1;
 
-  function login() {
-    const u = document.getElementById('username').value;
-    const p = document.getElementById('password').value;
-    const remember = document.getElementById('remember').checked;
-    if (u === user.username && p === user.password) {
-      if (remember) localStorage.setItem('smartrent-login', 'true');
-      document.getElementById('login').classList.add('hidden');
-      document.getElementById('app').classList.remove('hidden');
-      showPage('rooms');
-    } else {
-      alert('รหัสผ่านไม่ถูกต้อง');
-    }
+function login() {
+  if(u.value === 'admin' && p.value === '0000') {
+    localStorage.setItem('smartrent-login', '1');
+    login.style.display = 'none';
+    app.style.display = 'block';
+    render();
+  } else {
+    alert('รหัสผ่านไม่ถูกต้อง');
   }
+}
+if (localStorage.getItem('smartrent-login')) {
+  login.style.display = 'none';
+  app.style.display = 'block';
+  render();
+}
 
-  function showPage(page) {
-    document.querySelectorAll('.nav button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('nav' + capitalize(page)).classList.add('active');
-    const content = document.getElementById('content');
-    if (page === 'rooms') renderRooms(content);
-    else if (page === 'summary') renderSummary(content);
-    else if (page === 'settings') renderSettings(content);
-    else if (page === 'add') renderAddRoom(content);
-  }
+function getStatus(r) {
+  const now = new Date();
+  const due = new Date(r.due);
+  const end = new Date(r.end);
+  const soon = new Date();
+  soon.setMonth(soon.getMonth() + 3);
+  if (!r.tenant) return '';
+  if (end < soon) return 'red';
+  if (due < now) return 'yellow';
+  return 'green';
+}
 
-  function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+function render() {
+  let total = 0;
+  list.innerHTML = data.rooms.map((r, i) => {
+    const rent = parseFloat(r.rent || 0);
+    total += rent;
+    const alert = new Date(r.due) < new Date() ? " ⚠️" : "";
+    return `<div class="room ${getStatus(r)}">
+      <b>${r.room}</b> - ${r.tenant || 'ว่าง'}<br>
+      ค่าเช่า: ${rent.toLocaleString()}฿ ${alert}<br>
+      <button onclick="showDetail(${i})">ดูรายละเอียด</button>
+    </div>`;
+  }).join('');
+  list.innerHTML += `<div style="padding:10px;font-weight:bold">
+    รวมทั้งหมด: ${total.toLocaleString()} บาท</div>`;
+  localStorage.setItem('smartrent', JSON.stringify(data));
+}
 
-  function renderRooms(container) {
-    container.innerHTML = '<h2 class="topbar">ห้องทั้งหมด</h2>' + appData.rooms.map(r => `
-      <div class="card ${getStatusClass(r)}">
-        <strong>${r.room || 'ห้องไม่มีชื่อ'}</strong><br>
-        ผู้เช่า: ${r.tenant || '-'}<br>
-        ค่าเช่า: ${r.rent || '-'} บาท
-      </div>
-    `).join('');
-  }
+function add() {
+  data.rooms.push({
+    room: room.value,
+    tenant: tenant.value,
+    rent: rent.value,
+    end: end.value,
+    due: due.value,
+    tx: []
+  });
+  render();
+}
 
-  function renderAddRoom(container) {
-    container.innerHTML = `
-      <h2 class="topbar">เพิ่มห้องใหม่</h2>
-      <div class="card">
-        <input type="text" id="project" placeholder="โครงการ">
-        <input type="text" id="room" placeholder="ห้อง">
-        <input type="text" id="tenant" placeholder="ชื่อผู้เช่า">
-        <input type="number" id="rent" placeholder="ค่าเช่า">
-        <input type="number" id="deposit" placeholder="เงินประกัน">
-        <label>วันเริ่มต้นสัญญา</label><input type="date" id="startDate">
-        <label>วันสิ้นสุดสัญญา</label><input type="date" id="endDate">
-        <label>วันครบกำหนดชำระ</label><input type="date" id="dueDate">
-        <button onclick="saveRoom()">บันทึก</button>
-      </div>
-    `;
-  }
+function showDetail(i){
+  selected = i;
+  const r = data.rooms[i];
+  app.style.display = 'none';
+  detail.style.display = 'block';
+  detailTitle.innerText = `รายละเอียดห้อง ${r.room}`;
+  const txs = (r.tx||[]).map(t => `<div>- ${t.note}: ${t.amount}฿</div>`).join('');
+  detailBody.innerHTML = `
+    <div>ผู้เช่า: ${r.tenant || 'ว่าง'}</div>
+    <div>ค่าเช่า: ${r.rent}</div>
+    <div>ครบกำหนดชำระ: ${r.due}</div>
+    <h4>รายรับ/รายจ่าย</h4>
+    ${txs || '<i>ไม่มีรายการ</i>'}
+    <input id="note" placeholder="รายการ">
+    <input id="amt" placeholder="จำนวน" type="number">
+    <button onclick="addTx()">เพิ่มรายการ</button>
+  `;
+}
 
-  function saveRoom() {
-    const project = document.getElementById('project').value;
-    const room = document.getElementById('room').value;
-    const tenant = document.getElementById('tenant').value;
-    const rent = document.getElementById('rent').value;
-    const deposit = document.getElementById('deposit').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const dueDate = document.getElementById('dueDate').value;
+function closeDetail(){
+  detail.style.display = 'none';
+  app.style.display = 'block';
+  render();
+}
 
-    appData.rooms.push({ project, room, tenant, rent, deposit, startDate, endDate, dueDate });
-    localStorage.setItem(storageKey, JSON.stringify(appData));
-    alert('บันทึกเรียบร้อย');
-    showPage('rooms');
-  }
+function addTx(){
+  const r = data.rooms[selected];
+  if (!r.tx) r.tx = [];
+  const note = document.getElementById("note").value;
+  const amt = parseFloat(document.getElementById("amt").value);
+  r.tx.push({note, amount: amt});
+  localStorage.setItem('smartrent', JSON.stringify(data));
+  showDetail(selected);
+}
 
-  function getStatusClass(room) {
-    if (!room.tenant) return 'status-gray';
-    const today = new Date();
-    const due = new Date(room.dueDate);
-    const end = new Date(room.endDate);
-    const threeMonthsLater = new Date();
-    threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+function exportData() {
+  const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'smartrent.json';
+  a.click();
+}
 
-    if (end < threeMonthsLater) return 'status-red';
-    if (due < today) return 'status-yellow';
-    return 'status-green';
-  }
-
-  function renderSummary(container) {
-    let total = 0;
-    appData.rooms.forEach(r => total += parseFloat(r.rent || 0));
-    container.innerHTML = `
-      <h2 class="topbar">สรุปยอด</h2>
-      <div class="card">รวมค่าเช่าทั้งหมด: <strong>${total.toLocaleString()} บาท</strong></div>
-    `;
-  }
-
-  function renderSettings(container) {
-    container.innerHTML = `
-      <h2 class="topbar">ตั้งค่า</h2>
-      <div class="card">
-        <button onclick="exportData()">สำรองข้อมูล (Export)</button>
-        <input type="file" onchange="importData(event)">
-        <button onclick="clearData()">ล้างข้อมูลทั้งหมด</button>
-      </div>
-    `;
-  }
-
-  function exportData() {
-    const blob = new Blob([JSON.stringify(appData)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'SmartRentBackup.json';
-    a.click();
-  }
-
-  function importData(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = e => {
-      localStorage.setItem(storageKey, e.target.result);
-      location.reload();
-    };
-    reader.readAsText(file);
-  }
-
-  function clearData() {
-    if (confirm('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่?')) {
-      localStorage.removeItem(storageKey);
-      location.reload();
-    }
-  }
-
-  if (localStorage.getItem('smartrent-login')) {
-    document.getElementById('login').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-    showPage('rooms');
-  }
+function importData(e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    const newData = JSON.parse(e.target.result);
+    if (newData.rooms) data.rooms = data.rooms.concat(newData.rooms);
+    localStorage.setItem('smartrent', JSON.stringify(data));
+    render();
+  };
+  reader.readAsText(file);
+}
 </script>
-
 </body>
 </html>
