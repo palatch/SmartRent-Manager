@@ -1,23 +1,119 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>All Rooms</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMARTRENT - ระบบบริหารห้องเช่า</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #121212; color: white; }
+    h1 { color: #00ffcc; text-align: center; padding-top: 20px; }
+    .menu, .page { display: none; }
+    .active { display: block; padding: 20px; }
+    .bottom-nav {
+      position: fixed; bottom: 0; width: 100%;
+      background: #1f1f1f; display: flex; justify-content: space-around;
+      padding: 10px 0; border-top: 1px solid #333;
+    }
+    .bottom-nav button {
+      background: none; border: none; color: #00ffcc; font-size: 16px;
+    }
+    input, select {
+      width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px;
+      border: none; border-radius: 5px;
+    }
+    .room-card {
+      background: #222; margin: 10px 0; padding: 10px;
+      border-left: 5px solid limegreen;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>All Rooms</h1>
-    <div class="card red">101 - เหลือ 10 วัน<br><span>ค่าเช่า: ฿15,000</span></div>
-    <div class="card yellow">102 - ค้างจ่าย<br><span>ค่าเช่า: ฿14,000</span></div>
-    <div class="card green">103 - ปกติ<br><span>ค่าเช่า: ฿12,000</span></div>
-    <div class="card gray">104 - ว่าง<br><span>ค่าเช่า: —</span></div>
-    <div class="buttons">
-      <a class="btn" href="add.html">➕ เพิ่มห้อง</a>
-      <a class="btn" href="summary.html">📊 สรุป</a>
-      <a class="btn" href="detail.html">🔍 รายละเอียด</a>
-    </div>
+
+<h1>SMARTRENT</h1>
+
+<!-- หน้า Login -->
+<div class="page active" id="login">
+  <div style="text-align:center">
+    <p>💼 SMARTRENT – ระบบบริหารห้องเช่าแบบครบวงจร<br>
+    บริหารห้องเช่าง่าย ๆ ด้วยมือถือ<br>
+    บันทึกข้อมูลผู้เช่า ค่าเช่า รายรับ–รายจ่าย<br>
+    แนบไฟล์สัญญา ติดตามสถานะห้องแบบเรียลไทม์<br>
+    แจ้งเตือนครบกำหนด ค้างชำระ สรุปยอดรายเดือนอัตโนมัติ</p>
+    <button onclick="goPage('rooms')">เข้าสู่ระบบ</button>
   </div>
+</div>
+
+<!-- หน้า All Rooms -->
+<div class="page" id="rooms">
+  <h2>📋 รายการห้อง</h2>
+  <div id="roomList"></div>
+</div>
+
+<!-- หน้า Add Room -->
+<div class="page" id="add">
+  <h2>➕ เพิ่มห้องใหม่</h2>
+  <input id="project" placeholder="ชื่อโครงการ" />
+  <input id="room" placeholder="เลขห้อง" />
+  <input id="tenant" placeholder="ชื่อผู้เช่า" />
+  <input id="rent" placeholder="ค่าเช่า (บาท)" type="number" />
+  <input id="date" placeholder="วันครบกำหนด (YYYY-MM-DD)" />
+  <button onclick="saveRoom()">บันทึก</button>
+</div>
+
+<!-- สรุปรายรับ -->
+<div class="page" id="summary">
+  <h2>📊 รายรับรวม</h2>
+  <div id="summaryList"></div>
+</div>
+
+<!-- ตั้งค่า -->
+<div class="page" id="settings">
+  <h2>⚙️ ตั้งค่า</h2>
+  <button onclick="localStorage.clear(); alert('ล้างข้อมูลแล้ว'); location.reload()">🗑 ล้างข้อมูลทั้งหมด</button>
+</div>
+
+<!-- เมนูด้านล่าง -->
+<div class="bottom-nav">
+  <button onclick="goPage('rooms')">📋 ห้อง</button>
+  <button onclick="goPage('add')">➕ เพิ่ม</button>
+  <button onclick="goPage('summary')">📊 สรุป</button>
+  <button onclick="goPage('settings')">⚙️ ตั้งค่า</button>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('smartrent') || "[]");
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='rooms') renderRooms();
+  if(id==='summary') renderSummary();
+}
+function saveRoom(){
+  const r = {
+    project: project.value,
+    room: room.value,
+    tenant: tenant.value,
+    rent: parseFloat(rent.value),
+    due: date.value
+  };
+  data.push(r);
+  localStorage.setItem('smartrent', JSON.stringify(data));
+  goPage('rooms');
+}
+function renderRooms(){
+  roomList.innerHTML = data.map(r=>`
+    <div class="room-card">
+      <b>${r.project} - ${r.room}</b><br>
+      ผู้เช่า: ${r.tenant || 'ว่าง'}<br>
+      ค่าเช่า: ${r.rent?.toLocaleString() || 0}฿<br>
+      ครบกำหนด: ${r.due}
+    </div>`).join('');
+}
+function renderSummary(){
+  let total = data.reduce((sum,r)=>sum+(r.rent||0), 0);
+  summaryList.innerHTML = `<b>รวมค่าเช่าทั้งหมด:</b> ${total.toLocaleString()} บาท`;
+}
+</script>
 </body>
 </html>
