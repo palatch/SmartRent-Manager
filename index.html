@@ -2,223 +2,44 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SMARTRENT</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #0e0f11;
-      color: white;
-    }
-    header, footer {
-      padding: 1rem;
-      text-align: center;
-      background: #121417;
-    }
-    main {
-      padding: 1rem;
-    }
-    button {
-      padding: 0.6rem 1rem;
-      margin: 0.25rem;
-      background: #2d3748;
-      color: white;
-      border: none;
-      border-radius: 6px;
-    }
-    .card {
-      background: #1a1d21;
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    input, select {
-      padding: 0.5rem;
-      width: 100%;
-      margin-top: 0.25rem;
-      background: #2d3748;
-      color: white;
-      border: 1px solid #4a5568;
-      border-radius: 6px;
-    }
-    .room-status-red { border-left: 6px solid red; }
-    .room-status-yellow { border-left: 6px solid gold; }
-    .room-status-green { border-left: 6px solid limegreen; }
-    .room-status-gray { border-left: 6px solid #555; }
-  </style>
-</head>
-<body>
-  <header>
-    <h2>💼 SMARTRENT</h2>
-    <div>ระบบบริหารห้องเช่าแบบครบวงจร</div>
-  </header>
-  <main id="app">
-    <div id="login">
-      <h3>เข้าสู่ระบบ</h3>
-      <input id="user" placeholder="ชื่อผู้ใช้">
-      <input id="pass" placeholder="รหัสผ่าน" type="password">
-      <button onclick="login()">เข้าสู่ระบบ</button>
-    </div>
-
-    <div id="rooms" style="display:none">
-      <h3>📋 ห้องทั้งหมด</h3>
-      <div id="roomList"></div><br><button onclick="showSummary()">📊 Summary</button> <button onclick="showSettings()">⚙️ ตั้งค่า</button>
-      <button onclick="showAddRoom()">➕ เพิ่มห้อง</button>
-    </div>
-
-    <div id="addRoom" style="display:none">
-      <h3>➕ เพิ่มห้องใหม่</h3>
-      <div class="card">
-        <label>ชื่อโครงการ <input id="project"></label><br>
-        <label>เลขห้อง <input id="roomNumber"></label><br>
-        <label>ชื่อผู้เช่า <input id="tenant"></label><br>
-        <label>ค่าเช่า (บาท) <input id="rent" type="number"></label><br>
-        <label>เงินประกัน (บาท) <input id="deposit" type="number"></label><br>
-        <label>วันเริ่มสัญญา <input id="startDate" type="date"></label><br>
-        <label>วันสิ้นสุดสัญญา <input id="endDate" type="date"></label><br>
-        <label>วันครบกำหนดชำระ <input</label><br><label>แนบสัญญา <input type="file" id="contractFile"></label><br><label> id="dueDate" type="date"></label><br>
-        <button onclick="saveRoom()">💾 บันทึก</button>
-        <button onclick="deleteRoom(currentRoomIndex)">🗑 ลบห้องนี้</button> <button onclick="goHome()">🏠 กลับ</button>
-      </div>
-    </div>
-  
-<!-- Room Detail Section -->
-<div id="roomDetail" style="display:none">
-  <h3>🏠 รายละเอียดห้อง</h3>
-  <div id="roomDetailContent" class="card"></div><button onclick="addTransaction()">➕ เพิ่มรายรับ/รายจ่าย</button>
-<div id="editRoomForm" class="card" style="margin-top:1rem">
-  <label>ชื่อผู้เช่า <input id="editTenant"></label><br>
-  <label>ค่าเช่า (บาท) <input id="editRent" type="number"></label><br>
-  <label>วันครบกำหนดชำระ <input</label><br><label>แนบสัญญา <input type="file" id="contractFile"></label><br><label> id="editDueDate" type="date"></label><br>
-  <button onclick="saveEdit()">💾 บันทึกการแก้ไข</button>
-</div>
-
-  <button onclick="deleteRoom(currentRoomIndex)">🗑 ลบห้องนี้</button> <button onclick="goHome()">🏠 กลับ</button>
-</div>
-
-<!-- Summary Section -->
-<div id="summary" style="display:none">
-  <h3>📊 สรุปยอดทั้งหมด</h3>
-  <div id="summaryContent" class="card"></div>
-  <button onclick="deleteRoom(currentRoomIndex)">🗑 ลบห้องนี้</button> <button onclick="goHome()">🏠 กลับ</button>
-</div>
-
-<!-- Settings Section -->
-<div id="settings" style="display:none">
-  <h3>⚙️ ตั้งค่า</h3>
-  <button onclick="resetAll()">🧹 ล้างข้อมูลทั้งหมด</button>
-  <button onclick="deleteRoom(currentRoomIndex)">🗑 ลบห้องนี้</button> <button onclick="goHome()">🏠 กลับ</button>
-</div>
-</main>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMARTRENT – ระบบบริหารห้องเช่า</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script>
-    const data = JSON.parse(localStorage.getItem("smartrent") || "[]");
-
-    function login(){
-      const u = user.value.trim();
-      const p = pass.value.trim();
-      if(u && p){
-        document.getElementById("login").style.display = "none";
-        document.getElementById("rooms").style.display = "block";
-        renderRooms();
+    // ระบบเช็ค Login เบื้องต้น
+    function checkLogin() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      if (u === 'admin' && p === '1234') {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('main').style.display = 'block';
       } else {
-        alert("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน");
+        alert('รหัสผ่านไม่ถูกต้อง');
       }
-    }
-
-    function renderRooms(){
-      const now = new Date();
-      roomList.innerHTML = data.map((r, i)=>{
-        let colorClass = "room-status-gray";
-        if(r.tenant){
-          const end = new Date(r.endDate);
-          const due = new Date(r.dueDate);
-          if(end - now < 1000*60*60*24*90){
-            colorClass = "room-status-red";
-          } else if(due < now){
-            colorClass = "room-status-yellow";
-          } else {
-            colorClass = "room-status-green";
-          }
-        }
-        return `<div class="card ${colorClass}">
-          <b>${r.project} ${r.roomNumber}</b><br>
-          ผู้เช่า: ${r.tenant || "ว่าง"}<br>
-          ค่าเช่า: ${r.rent || "-"} บาท<br><button onclick="viewDetail(${i})">ดูรายละเอียด</button>
-        </div>`;
-      }).join('');
-    }
-
-    function showAddRoom(){
-      document.getElementById("rooms").style.display = "none";
-      document.getElementById("addRoom").style.display = "block";
-    }
-
-    function saveRoom(){
-      data.push({
-        project: project.value,
-        roomNumber: roomNumber.value,
-        tenant: tenant.value,
-        rent: rent.value,
-        deposit: deposit.value,
-        startDate: startDate.value,
-        endDate: endDate.value,
-        dueDate: dueDate.value
-      });
-      localStorage.setItem("smartrent", JSON.stringify(data));
-      goHome();
-    }
-
-    function goHome(){
-      document.getElementById("addRoom").style.display = "none";
-      document.getElementById("rooms").style.display = "block";
-      renderRooms();
     }
   </script>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+  <!-- หน้า Login -->
+  <div id="login" class="flex flex-col items-center justify-center h-screen">
+    <h1 class="text-3xl mb-4">SMARTRENT</h1>
+    <input id="username" type="text" placeholder="ชื่อผู้ใช้" class="mb-2 px-4 py-2 rounded bg-gray-800 text-white" />
+    <input id="password" type="password" placeholder="รหัสผ่าน 4 หลัก" class="mb-2 px-4 py-2 rounded bg-gray-800 text-white" />
+    <button onclick="checkLogin()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded">เข้าสู่ระบบ</button>
+  </div>
+
+  <!-- หน้า Main App -->
+  <div id="main" style="display:none;">
+    <div class="p-4">
+      <h2 class="text-xl font-bold mb-2">📋 รายการห้องทั้งหมด</h2>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-red-600 p-4 rounded">ห้อง A101 (ค้างชำระ)</div>
+        <div class="bg-yellow-500 p-4 rounded text-black">ห้อง A102 (ใกล้ครบกำหนด)</div>
+        <div class="bg-green-600 p-4 rounded">ห้อง A103 (ปกติ)</div>
+        <div class="bg-gray-700 p-4 rounded">ห้อง A104 (ว่าง)</div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
-
-    <script>
-    function deleteRoom(index){
-      if(confirm("ยืนยันลบห้องนี้?")){
-        data.splice(index, 1);
-        localStorage.setItem("smartrent", JSON.stringify(data));
-        goHome();
-      }
-    }
-    </script>
-    
-    <script>
-    function addTransaction(){
-      const note = prompt("ระบุรายการ:");
-      const amt = parseFloat(prompt("จำนวนเงิน:"));
-      if(!data[currentRoomIndex].txn) data[currentRoomIndex].txn = [];
-      data[currentRoomIndex].txn.push({note, amt, date: new Date().toISOString().slice(0,10)});
-      localStorage.setItem("smartrent", JSON.stringify(data));
-      viewDetail(currentRoomIndex);
-    }
-    </script>
-    
-    <script>
-    function getStatusColor(r){
-      const today = new Date();
-      const due = new Date(r.dueDate || "9999-12-31");
-      const end = new Date(r.endDate || "9999-12-31");
-      const msLeft = end - today;
-      const msDue = today - due;
-
-      if(!r.tenant) return "gray";
-      if(msLeft < 1000*60*60*24*90) return "red"; // น้อยกว่า 3 เดือน
-      if(msDue > 0) return "yellow"; // เกินกำหนด
-      return "green";
-    }
-    </script>
-    
-    <script>
-    function getStatusColorOrder(c){
-      return {"red":0,"yellow":1,"green":2,"gray":3}[c] || 4;
-    }
-    </script>
-    
