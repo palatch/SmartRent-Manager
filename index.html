@@ -1,613 +1,290 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>SMARTRENT - ระบบบริหารห้องเช่า</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>SMARTRENT — Mobile</title>
   <style>
-    :root {
-      --danger: #ff3b30;
-      --warning: #ffcc00;
-      --success: #4cd964;
-      --muted: #bbb;
-      --border-radius: 10px;
-      --spacer: 12px;
-      --card-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-    body {
-      font-family: 'Sarabun', Tahoma, Arial, sans-serif;
-      background: #f6f8fa;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #2d3436;
-      color: #fff;
-      padding: 24px 16px 16px 16px;
-      text-align: center;
-      font-size: 2em;
-      letter-spacing: 2px;
-      border-bottom-left-radius: 20px;
-      border-bottom-right-radius: 20px;
-      margin-bottom: 1em;
-    }
-    main {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 8px;
-    }
-    .section {
-      background: #fff;
-      margin-bottom: 2em;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      padding: var(--spacer);
-    }
-    h2 {
-      margin-top: 0;
-      font-size: 1.15em;
-      letter-spacing: 1px;
-    }
-    form label {
-      display: block;
-      margin: 8px 0 2px 0;
-      font-weight: 500;
-    }
-    form input, form select, form textarea {
-      width: 100%;
-      padding: 7px 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1em;
-      margin-bottom: 8px;
-      box-sizing: border-box;
-    }
-    form .row {
-      display: flex;
-      gap: var(--spacer);
-      flex-wrap: wrap;
-    }
-    form .row > div {
-      flex: 1 1 120px;
-      min-width: 140px;
-    }
-    button, .button {
-      background: #2d3436;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 18px;
-      font-size: 1em;
-      margin: 5px 2px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover, .button:hover {
-      background: #636e72;
-    }
-    .room-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .room-card {
-      margin-bottom: 20px;
-      background: #fff;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
-      border: 4px solid transparent;
-      transition: border-color 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-    .room-border-red { border-color: var(--danger);}
-    .room-border-yellow { border-color: var(--warning);}
-    .room-border-green { border-color: var(--success);}
-    .room-border-muted { border-color: var(--muted);}
-    .room-header {
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #f3f3f3;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-    }
-    .room-title {
-      font-size: 1.1em;
-      font-weight: bold;
-    }
-    .room-status {
-      font-size: 0.93em;
-      padding: 2px 10px;
-      border-radius: 6px;
-      margin-left: 8px;
-      color: #fff;
-      font-weight: bold;
-    }
-    .status-red { background: var(--danger);}
-    .status-yellow { background: var(--warning); color:#333;}
-    .status-green { background: var(--success);}
-    .status-muted { background: var(--muted); color:#333;}
-    .room-actions {
-      margin-left: auto;
-      display: flex;
-      gap: 6px;
-    }
-    .room-actions button {
-      font-size: 0.95em;
-      padding: 4px 10px;
-      background: #e0e0e0;
-      color: #333;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 0;
-    }
-    .room-actions button:hover {
-      background: #b2bec3;
-    }
-    .room-details {
-      padding: 8px 12px 0 12px;
-      font-size: 0.98em;
-    }
-    .tx-log {
-      margin: 12px 0 6px 0;
-      padding: 0;
-      list-style: none;
-      background: #f8f8f8;
-      border-radius: 6px;
-      font-size: 0.97em;
-    }
-    .tx-log li {
-      padding: 5px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      border-bottom: 1px solid #eee;
-    }
-    .tx-log li:last-child { border-bottom: none;}
-    .tx-income { color: #34a853; }
-    .tx-expense { color: #e53935; }
-    .tx-date { font-size: 0.95em; color: #888; margin-left: 8px;}
-    .tx-detail { color: #607d8b; margin-left: 8px;}
-    .tx-summary {
-      text-align: right;
-      font-weight: bold;
-      margin: 4px 0 0 0;
-      color: #444;
-      padding-right: 10px;
-    }
-    .import-export {
-      margin: 0 0 6px 0;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .import-export input[type="file"] {
-      display: none;
-    }
-    @media (max-width: 600px) {
-      main {
-        padding: 3px;
-      }
-      .room-header, .room-details {
-        padding: 7px 6px;
-      }
-      .room-card {
-        margin-bottom: 11px;
-      }
-      .section {
-        padding: 7px;
-      }
-      form .row { flex-direction: column;}
-    }
+    :root { --bg:#0a0f1a; --bg-2:#090e1a; --card:#1a1f2e; --text:#eef2ff; --muted:#94a3b8;
+      --pri-1:#6366f1; --pri-2:#3b82f6; --pri-3:#0ea5e9; --pri-4:#0284c7;
+      --radius:18px; --shadow:0 12px 36px rgba(0,0,0,.45);
+      --red:#ef4444; --yellow:#facc15; --green:#22c55e; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Sarabun',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:radial-gradient(80% 120% at 20% 0%, #0e1530 0, var(--bg) 60%, var(--bg-2) 100%);color:var(--text);padding-bottom:96px}
+    a{text-decoration:none;color:inherit;cursor:pointer}
+    header{padding:20px 18px 8px;display:flex;align-items:center;justify-content:space-between}
+    .eyebrow{color:#6f7da1;letter-spacing:.12em;font-weight:700;font-size:.78rem}
+    .title{font-size:2rem;font-weight:800;margin-top:6px}
+    .add-circle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pri-3),#3557ef);box-shadow:0 10px 26px rgba(67,97,238,.35);color:#fff;font-size:26px}
+    main{max-width:920px;margin:0 auto;padding:8px 16px}
+    .card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin:14px;border:1px solid rgba(255,255,255,.06)}
+    .view{display:none}
+    .view.active{display:block}
+    .dock{position:fixed;left:0;right:0;bottom:18px;display:flex;justify-content:center;gap:12px}
+    .dock a{min-width:140px;text-align:center;padding:14px 18px;border-radius:16px;font-weight:700;color:#fff;box-shadow:0 12px 34px rgba(0,0,0,.35)}
+    .btn-sum{background:linear-gradient(135deg,#7a5cff,#3bc6f6)}
+    .btn-set{background:linear-gradient(135deg,#46a0ff,#2b6fff)}
+
+    /* Room list */
+    .room-list{list-style:none;padding:0;margin:0}
+    .room-card{border-radius:20px;padding:18px 16px;margin:14px 0;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:#fff}
+    .room-num{font-size:1.35rem;font-weight:900}
+    .room-sub{display:flex;gap:12px;color:#e5e7eb;opacity:.95}
+    .room-amount{font-weight:800;font-size:1.2rem}
+    .grad-red{background:linear-gradient(180deg,#ef4444,#b91c1c)}
+    .grad-yellow{background:linear-gradient(180deg,#facc15,#ca8a04);color:#111}
+    .grad-green{background:linear-gradient(180deg,#22c55e,#15803d)}
+    .grad-muted{background:linear-gradient(180deg,#6b7280,#111827)}
+
+    /* Forms */
+    .form label{display:block;margin:8px 2px;color:var(--muted)}
+    .form input,.form select{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0e1628;color:#fff}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:640px){.row2{grid-template-columns:1fr}}
+
+    /* Buttons */
+    .btn{padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:700}
+    .btn.primary{background:linear-gradient(135deg,var(--pri-1),var(--pri-2));color:#fff;border:none}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}
+    .btn.danger{background:linear-gradient(135deg,#ff6b6b,#ff4757);color:#fff;border:none}
+
+    /* Settings circle buttons */
+    .circle-btn {width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.3);border:none;cursor:pointer}
+    .btn-export {background:linear-gradient(135deg,#3bc6f6,#3557ef)}
+    .btn-import {background:linear-gradient(135deg,#46a0ff,#2b6fff)}
+    .circle-group{display:flex;gap:20px;justify-content:center;margin-top:14px}
+
+    /* Transactions */
+    .tx-list{list-style:none;padding:0;margin:0}
+    .tx-list li{display:grid;grid-template-columns:92px 1fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .muted{color:var(--muted)}
+
+    /* Modals */
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);padding:16px;z-index:10}
+    .sheet{width:min(680px,92vw);background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px;border:1px solid rgba(255,255,255,.06)}
   </style>
 </head>
 <body>
   <header>
-    SMARTRENT<br>
-    <span style="font-size:0.55em;">ระบบบริหารห้องเช่า / Rental Room Management</span>
+    <div>
+      <div class="eyebrow" id="eyebrow">DASHBOARD</div>
+      <div class="title" id="pageTitle">All Rooms</div>
+    </div>
+    <a class="add-circle" href="#" id="quickAdd">＋</a>
   </header>
+
   <main>
-    <div class="section">
-      <h2>เพิ่มห้องใหม่ / Add New Room</h2>
-      <form id="roomForm">
-        <div class="row">
+    <!-- ROOMS -->
+    <section class="view active" id="viewRooms">
+      <ul class="room-list" id="roomList"></ul>
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="view" id="viewSummary">
+      <div class="card">
+        <h2>สรุปรายเดือน</h2>
+        <div class="row2" style="margin-top:6px"><div><label>เดือน</label><input type="month" id="sumMonth" /></div></div>
+        <div class="row2" style="margin-top:10px">
+          <div class="card" style="margin:0"><div class="muted">รายรับรวม</div><div id="kpiIn" style="font-size:1.3rem;font-weight:800">฿0</div></div>
+          <div class="card" style="margin:0"><div class="muted">รายจ่ายรวม</div><div id="kpiOut" style="font-size:1.3rem;font-weight:800">฿0</div></div>
+        </div>
+        <div class="card" style="margin-top:10px"><div class="muted">กำไรสุทธิ</div><div id="kpiNet" style="font-size:1.3rem;font-weight:800">฿0</div></div>
+      </div>
+      <div class="card"><h2>รายการธุรกรรม</h2><ul class="tx-list" id="sumList"></ul></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="viewSettings">
+      <div class="card">
+        <h2>Settings</h2>
+        <p class="muted">ข้อมูลเก็บในอุปกรณ์ (localStorage, key: <code>smartrent_rooms_v1</code>) การอัปเดตไฟล์บน GitHub จะไม่ลบข้อมูล</p>
+        <div class="circle-group">
+          <button class="circle-btn btn-export" id="btnExport">Export</button>
+          <button class="circle-btn btn-import" id="btnImport">Import</button>
+        </div>
+        <input type="file" id="fileImport" accept="application/json,.json" hidden />
+      </div>
+      <div class="card">
+        <h2>Self‑Check</h2>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><button class="btn" id="btnSelfCheck">Run</button></div>
+        <ul class="tx-list" id="testResults" style="margin-top:8px"></ul>
+      </div>
+    </section>
+  </main>
+
+  <div class="dock">
+    <a class="btn-sum" id="goSummary">Summary</a>
+    <a class="btn-set" id="goSettings">Settings</a>
+  </div>
+
+  <!-- ADD/EDIT ROOM MODAL -->
+  <div class="modal" id="modalRoom">
+    <div class="sheet">
+      <h2 id="modalTitle">เพิ่มห้องใหม่</h2>
+      <form class="form" id="roomForm">
+        <label>เลขห้อง</label>
+        <input id="roomNumber" required maxlength="16">
+        <div class="row2">
           <div>
-            <label for="roomNumber">เลขห้อง / Room Number</label>
-            <input id="roomNumber" required maxlength="10">
-          </div>
-          <div>
-            <label for="startDate">วันเริ่มต้นสัญญา / Contract Start Date</label>
+            <label>วันเริ่ม</label>
             <input id="startDate" type="date" required>
           </div>
           <div>
-            <label for="endDate">วันสิ้นสุดสัญญา / Contract End Date</label>
+            <label>วันสิ้นสุด</label>
             <input id="endDate" type="date" required>
           </div>
+        </div>
+        <div class="row2">
           <div>
-            <label for="dueDay">วันครบกำหนดชำระ (1-31) / Payment Due Day</label>
+            <label>วันครบกำหนด (1–31)</label>
             <input id="dueDay" type="number" min="1" max="31" required>
           </div>
+          <div>
+            <label>ค่าเช่า/เดือน (฿)</label>
+            <input id="rentAmount" type="number" min="0" step="0.01" placeholder="เช่น 12000">
+          </div>
         </div>
-        <input type="hidden" id="editRoomId">
-        <button type="submit" id="saveRoomBtn">เพิ่ม / Add</button>
-        <button type="button" id="cancelEditBtn" style="display:none;">ยกเลิก / Cancel</button>
-      </form>
-    </div>
-
-    <div class="section">
-      <div class="import-export">
-        <button type="button" id="exportBtn">Export JSON</button>
-        <label class="button" style="margin:0;">
-          Import JSON
-          <input type="file" id="importInput" accept=".json">
-        </label>
-      </div>
-      <h2>รายการห้องเช่า / Room List</h2>
-      <ul id="roomList" class="room-list"></ul>
-    </div>
-  </main>
-
-  <!-- Modal for Add Transaction -->
-  <div id="txModal" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.2);z-index:10;align-items:center;justify-content:center;">
-    <div style="background:#fff;max-width:99vw;width:340px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.19);padding:20px;position:relative;">
-      <h3 style="margin:0 0 10px 0;">บันทึกรายรับ–รายจ่าย / Add Income-Expense</h3>
-      <form id="txForm">
-        <input type="hidden" id="txRoomId">
-        <label for="txType">ประเภท / Type</label>
-        <select id="txType" required>
-          <option value="income">รายรับ / Income</option>
-          <option value="expense">รายจ่าย / Expense</option>
-        </select>
-        <div id="incomeFields" style="display:block;">
-          <label for="incomeCategory">หมวดรายรับ / Income Category</label>
-          <select id="incomeCategory">
-            <option value="ค่าเช่า">ค่าเช่า / Rent</option>
-            <option value="ค่าปรับ">ค่าปรับ / Fine</option>
-            <option value="เงินประกัน">เงินประกัน / Deposit</option>
-          </select>
-          <label for="incomeDate">วันที่รับเงิน / Date Received</label>
-          <input type="date" id="incomeDate">
-        </div>
-        <div id="expenseFields" style="display:none;">
-          <label for="expenseCategory">หมวดรายจ่าย / Expense Category</label>
-          <select id="expenseCategory">
-            <option value="เงินประกัน">เงินประกัน / Deposit</option>
-            <option value="ล้างแอร์">ล้างแอร์ / Air Cleaning</option>
-            <option value="ทำความสะอาด">ทำความสะอาด / Cleaning</option>
-            <option value="อื่น ๆ">อื่น ๆ / Other</option>
-          </select>
-          <label for="expenseDate">วันที่จ่ายเงิน / Date Paid</label>
-          <input type="date" id="expenseDate">
-          <label for="expenseOther" style="display:none;">ระบุหมวด / Specify Category</label>
-          <input id="expenseOther" maxlength="30" placeholder="ระบุหมวด (อื่น ๆ) / Specify (Other)" style="display:none;">
-        </div>
-        <label for="txAmount">จำนวนเงิน / Amount</label>
-        <input id="txAmount" type="number" min="0" step="0.01" required>
-        <label for="txDetail">รายละเอียด / Detail</label>
-        <textarea id="txDetail" rows="2" maxlength="100"></textarea>
-        <div style="text-align:right;margin-top:10px;">
-          <button type="submit">บันทึก / Save</button>
-          <button type="button" id="closeTxModalBtn">ปิด / Close</button>
+        <input type="hidden" id="editId">
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn primary" type="submit">บันทึก</button>
+          <button class="btn ghost" type="button" id="btnCancel">ยกเลิก</button>
+          <button class="btn danger" type="button" id="btnDelete" style="margin-left:auto;display:none">ลบห้อง</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- ROOM DETAIL + TRANSACTIONS MODAL -->
+  <div class="modal" id="modalDetail">
+    <div class="sheet">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h2 id="detailTitle">รายละเอียดห้อง</h2><div style="display:flex;gap:8px"><button class="btn ghost" id="btnEditRoom">แก้ไข</button><button class="btn danger" id="btnDeleteRoom2">ลบห้อง</button></div></div>
+      <div class="card" style="margin:10px 0"><div class="muted" id="detailInfo">—</div></div>
+      <div class="card" style="margin:10px 0">
+        <h3>เพิ่มธุรกรรม</h3>
+        <form class="form" id="txForm">
+          <div class="row2">
+            <div>
+              <label>ประเภท</label>
+              <select id="txType"><option value="income">รายรับ</option><option value="expense">รายจ่าย</option></select>
+            </div>
+            <div>
+              <label>วันที่</label>
+              <input type="date" id="txDate" required>
+            </div>
+          </div>
+          <label>หมวด</label>
+          <input id="txCat" placeholder="เช่น ค่าเช่า / ล้างแอร์" required>
+          <label>จำนวนเงิน (฿)</label>
+          <input type="number" id="txAmount" min="0" step="0.01" required>
+          <label>รายละเอียด</label>
+          <input id="txDetail" maxlength="100">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn primary" type="submit">บันทึก</button>
+            <button class="btn ghost" type="button" id="txClose">ปิด</button>
+          </div>
+        </form>
+      </div>
+      <div class="card" style="margin:10px 0">
+        <h3>รายการธุรกรรม</h3>
+        <ul class="tx-list" id="txList"></ul>
+        <div class="muted" id="txTotal" style="text-align:right;margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ---------- Data Persistence ----------
-    const LOCAL_KEY = 'smartrent_rooms_v1';
+    // ===== Data layer =====
+    const LOCAL_KEY='smartrent_rooms_v1';
+    let rooms=[];
+    const pad = n => n.toString().padStart(2,'0');
+    const money = n => '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2});
+    const monthKey = d => d.getFullYear()+"-"+pad(d.getMonth()+1);
+    const todayISO = () => new Date().toISOString().slice(0,10);
+    const genId = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    const fmtTH = s => { if(!s) return ''; const d=new Date(s); if(isNaN(d)) return s; return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()+543}`; };
 
-    // Structure: [{ id, roomNumber, startDate, endDate, dueDay, transactions: [{id, type, category, date, amount, detail}] }]
-    let rooms = [];
+    function saveData(){ localStorage.setItem(LOCAL_KEY, JSON.stringify(rooms)); }
+    function loadData(){ try{ const d=localStorage.getItem(LOCAL_KEY); rooms=d?JSON.parse(d):[]; }catch{ rooms=[]; } }
 
-    function saveData() {
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(rooms));
-      // Update file for backup (simulate by offering download)
-      updateBackupFile();
+    // ===== Business logic =====
+    function statusOf(r){
+      if(!(r.transactions||[]).length) return {cls:'grad-muted',text:'Vacant'};
+      const now=new Date(); const end=new Date(r.endDate);
+      const diff=(end.getFullYear()-now.getFullYear())*12 + (end.getMonth()-now.getMonth());
+      if (diff<3 || (diff===3 && end.getDate()<=now.getDate())) return {cls:'grad-red',text:'Expiring soon'};
+      const ym=monthKey(now);
+      const paid=(r.transactions||[]).some(t=> t.type==='income' && t.category==='ค่าเช่า' && t.date?.startsWith(ym));
+      const due=new Date(now.getFullYear(), now.getMonth(), r.dueDay);
+      if (now>due && !paid) return {cls:'grad-yellow',text:'Overdue'};
+      return {cls:'grad-green',text:'Occupied'};
     }
-    function loadData() {
-      const d = localStorage.getItem(LOCAL_KEY);
-      rooms = d ? JSON.parse(d) : [];
-    }
+    function monthNet(r, ym){ let s=0; for(const t of (r.transactions||[])){ if(t.date?.startsWith(ym)){ s += (t.type==='income'?1:-1)*Number(t.amount||0); } } return s; }
 
-    // ---------- Import/Export ----------
-    function updateBackupFile() {
-      // For instant download backup (simulate)
-      window.rentDataBlob = new Blob([JSON.stringify(rooms, null, 2)], {type:"application/json"});
-    }
+    // ===== Routing =====
+    const views={rooms:document.getElementById('viewRooms'), summary:document.getElementById('viewSummary'), settings:document.getElementById('viewSettings')};
+    function setView(name){ Object.values(views).forEach(v=>v.classList.remove('active')); views[name].classList.add('active'); document.getElementById('pageTitle').textContent = name==='rooms'? 'All Rooms': (name==='summary'? 'Summary':'Settings'); }
+    function route(){ const h=location.hash.replace('#',''); if(h==='summary') setView('summary'); else if(h==='settings') setView('settings'); else setView('rooms'); if(h==='summary') renderSummary(); }
+    window.addEventListener('hashchange', route);
 
-    function exportData() {
-      updateBackupFile();
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(window.rentDataBlob);
-      a.download = "rentData.json";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 200);
-    }
+    // ===== Rooms UI =====
+    function renderRooms(){ const ul=document.getElementById('roomList'); ul.innerHTML=''; const ym=monthKey(new Date());
+      const sorted = rooms.slice().sort((a,b)=>{ const rk={'grad-red':0,'grad-yellow':1,'grad-green':2,'grad-muted':3}; const ra=rk[statusOf(a).cls], rb=rk[statusOf(b).cls]; return ra-rb || String(a.roomNumber).localeCompare(String(b.roomNumber),'th'); });
+      for(const r of sorted){ const st=statusOf(r); const net=monthNet(r,ym); const li=document.createElement('li'); li.className='room-card '+st.cls; li.innerHTML=`<div><div class="room-num">${r.roomNumber}</div><div class="room-sub">${st.text} · Rent: ${r.rent? money(r.rent):'—'}</div></div><div class="room-amount">${net>=0?'+':'-'}${money(Math.abs(net))}</div>`; li.onclick=()=>openDetail(r.id); ul.appendChild(li);} if(!sorted.length){ ul.innerHTML='<li class="card" style="list-style:none">ยังไม่มีห้อง — แตะ ＋ เพื่อเพิ่ม</li>'; } }
 
-    function importData(file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if(!Array.isArray(data)) throw new Error("Invalid format");
-          rooms = data;
-          saveData();
-          renderRoomList();
-          alert("นำเข้าข้อมูลสำเร็จ / Import Success");
-        } catch (err) {
-          alert("นำเข้าข้อมูลผิดพลาด / Import Error: " + err.message);
-        }
-      };
-      reader.readAsText(file);
-    }
+    // ===== Add/Edit Room modal =====
+    const modalRoom=document.getElementById('modalRoom');
+    const roomForm=document.getElementById('roomForm');
+    const editId=document.getElementById('editId');
+    document.getElementById('quickAdd').addEventListener('click', e=>{ e.preventDefault(); openRoomModal(); });
+    document.getElementById('btnCancel').addEventListener('click', closeRoomModal);
+    document.getElementById('btnDelete').addEventListener('click', deleteRoomFromModal);
+    modalRoom.addEventListener('click',e=>{ if(e.target===modalRoom) closeRoomModal(); });
 
-    // ---------- Utilities ----------
-    function genId() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-    }
-    function formatDateTH(dateStr) {
-      if(!dateStr) return '';
-      const d = new Date(dateStr);
-      if(isNaN(d)) return '';
-      return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
-    }
-    function getCurrentMonth() {
-      const d = new Date();
-      return d.getFullYear() + '-' + (d.getMonth()+1).toString().padStart(2,'0');
-    }
-    // ---------- Room CRUD ----------
-    function addOrUpdateRoom(e) {
-      e.preventDefault();
-      const id = document.getElementById('editRoomId').value;
-      const roomNumber = document.getElementById('roomNumber').value.trim();
-      const startDate = document.getElementById('startDate').value;
-      const endDate = document.getElementById('endDate').value;
-      const dueDay = parseInt(document.getElementById('dueDay').value);
+    function openRoomModal(id){ const editing=Boolean(id); document.getElementById('modalTitle').textContent = editing? 'แก้ไขห้อง' : 'เพิ่มห้องใหม่'; document.getElementById('btnDelete').style.display = editing? 'inline-flex':'none'; roomForm.reset(); editId.value=id||''; if(editing){ const r=rooms.find(x=>x.id===id); if(!r) return; roomNumber.value=r.roomNumber; startDate.value=r.startDate; endDate.value=r.endDate; dueDay.value=r.dueDay; rentAmount.value=r.rent||''; } modalRoom.style.display='grid'; }
+    function closeRoomModal(){ modalRoom.style.display='none'; }
+    function deleteRoomFromModal(){ const id=editId.value; if(!id) return; if(!confirm('ลบห้องและข้อมูลทั้งหมด?')) return; rooms=rooms.filter(x=>x.id!==id); saveData(); closeRoomModal(); renderRooms(); }
 
-      if(!roomNumber || !startDate || !endDate || !dueDay) return;
+    roomForm.addEventListener('submit', e=>{ e.preventDefault(); const payload={ roomNumber:roomNumber.value.trim(), startDate:startDate.value, endDate:endDate.value, dueDay:parseInt(dueDay.value,10), rent: parseFloat(rentAmount.value||'0')||undefined, transactions:[] };
+      if(!payload.roomNumber) return alert('กรุณากรอกเลขห้อง');
+      const id=editId.value; if(id){ const r=rooms.find(x=>x.id===id); Object.assign(r, payload, {transactions:r.transactions||[]}); } else { if(rooms.some(x=>String(x.roomNumber)===String(payload.roomNumber))) return alert('เลขห้องซ้ำ'); rooms.push({ id:genId(), ...payload }); }
+      saveData(); closeRoomModal(); renderRooms(); });
 
-      if(id) {
-        // Edit
-        const r = rooms.find(r=>r.id===id);
-        if(r) {
-          r.roomNumber = roomNumber;
-          r.startDate = startDate;
-          r.endDate = endDate;
-          r.dueDay = dueDay;
-        }
-        document.getElementById('saveRoomBtn').textContent = 'เพิ่ม / Add';
-        document.getElementById('cancelEditBtn').style.display = 'none';
-      } else {
-        // Add
-        if(rooms.some(r=>r.roomNumber===roomNumber)) {
-          alert('เลขห้องนี้มีอยู่แล้ว / Room number already exists.');
-          return;
-        }
-        rooms.push({
-          id: genId(),
-          roomNumber, startDate, endDate, dueDay,
-          transactions: []
-        });
-      }
-      document.getElementById('roomForm').reset();
-      document.getElementById('editRoomId').value = '';
-      saveData();
-      renderRoomList();
-    }
+    // ===== Room Detail + Transactions modal =====
+    const modalDetail=document.getElementById('modalDetail');
+    const txForm=document.getElementById('txForm');
+    const txList=document.getElementById('txList');
+    const txTotal=document.getElementById('txTotal');
+    let currentRoomId=null;
 
-    function editRoom(id) {
-      const r = rooms.find(r=>r.id===id);
-      if(!r) return;
-      document.getElementById('roomNumber').value = r.roomNumber;
-      document.getElementById('startDate').value = r.startDate;
-      document.getElementById('endDate').value = r.endDate;
-      document.getElementById('dueDay').value = r.dueDay;
-      document.getElementById('editRoomId').value = r.id;
-      document.getElementById('saveRoomBtn').textContent = 'แก้ไข / Edit';
-      document.getElementById('cancelEditBtn').style.display = '';
-      window.scrollTo({top:0,behavior:'smooth'});
-    }
+    function openDetail(id){ const r=rooms.find(x=>x.id===id); if(!r) return; currentRoomId=id; document.getElementById('detailTitle').textContent='ห้อง '+r.roomNumber; document.getElementById('detailInfo').textContent=`สัญญา: ${fmtTH(r.startDate)}–${fmtTH(r.endDate)} · ครบกำหนด: ${r.dueDay}${r.rent? ' · ค่าเช่า: '+money(r.rent):''}`; document.getElementById('btnEditRoom').onclick=()=>openRoomModal(r.id); document.getElementById('btnDeleteRoom2').onclick=()=>{ if(!confirm('ลบห้องนี้ทั้งหมด?')) return; rooms=rooms.filter(x=>x.id!==r.id); saveData(); closeDetail(); renderRooms(); }; txDate.value=todayISO(); txCat.value='ค่าเช่า'; txAmount.value=''; txDetail.value=''; renderTxList(r); modalDetail.style.display='grid'; }
+    function closeDetail(){ modalDetail.style.display='none'; currentRoomId=null; }
+    document.getElementById('txClose').addEventListener('click', closeDetail);
+    modalDetail.addEventListener('click', e=>{ if(e.target===modalDetail) closeDetail(); });
 
-    function cancelEditRoom() {
-      document.getElementById('roomForm').reset();
-      document.getElementById('editRoomId').value = '';
-      document.getElementById('saveRoomBtn').textContent = 'เพิ่ม / Add';
-      document.getElementById('cancelEditBtn').style.display = 'none';
-    }
+    function renderTxList(r){ txList.innerHTML=''; let sum=0; const arr=(r.transactions||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)); for(const t of arr){ sum += (t.type==='income'?1:-1)*Number(t.amount||0); const li=document.createElement('li'); li.innerHTML = `<span class="muted">${fmtTH(t.date)}</span><span>${t.category}${t.detail? ': '+t.detail:''}</span><span class="${t.type==='income'?'':'neg'}">${t.type==='income'?'+':'-'}${money(t.amount)}</span>`; const del=document.createElement('button'); del.className='btn ghost'; del.textContent='ลบ'; del.onclick=()=>{ if(!confirm('ลบรายการนี้?')) return; const rr=rooms.find(x=>x.id===r.id); rr.transactions=(rr.transactions||[]).filter(x=>x.id!==t.id); saveData(); renderTxList(rr); renderRooms(); }; li.appendChild(del); txList.appendChild(li); } txTotal.textContent='ยอดสุทธิทั้งหมด: '+ (sum>=0?'+':'-') + money(Math.abs(sum)); }
 
-    function deleteRoom(id) {
-      if(!confirm('ต้องการลบห้องนี้และข้อมูลทั้งหมด? / Delete this room and all data?')) return;
-      rooms = rooms.filter(r=>r.id!==id);
-      saveData();
-      renderRoomList();
-    }
+    txForm.addEventListener('submit', e=>{ e.preventDefault(); if(!currentRoomId) return; const r=rooms.find(x=>x.id===currentRoomId); if(!r) return; const type=document.getElementById('txType').value; const category=document.getElementById('txCat').value.trim(); const date=document.getElementById('txDate').value; const amount=parseFloat(document.getElementById('txAmount').value); const detail=(document.getElementById('txDetail').value||'').trim(); if(!category) return alert('กรุณาระบุหมวด'); if(!(amount>0)) return alert('จำนวนเงินไม่ถูกต้อง'); if(!date) return alert('กรุณาเลือกวันที่'); r.transactions=r.transactions||[]; r.transactions.push({ id:genId(), type, category, date, amount, detail }); saveData(); renderTxList(r); renderRooms(); document.getElementById('txAmount').value=''; document.getElementById('txDetail').value=''; });
 
-    // ---------- Transaction ----------
-    function openTxModal(roomId) {
-      document.getElementById('txRoomId').value = roomId;
-      document.getElementById('txForm').reset();
-      document.getElementById('incomeFields').style.display = 'block';
-      document.getElementById('expenseFields').style.display = 'none';
-      document.getElementById('expenseOther').style.display = 'none';
-      document.getElementById('txModal').style.display = 'flex';
-    }
-    function closeTxModal() {
-      document.getElementById('txModal').style.display = 'none';
-    }
+    // ===== Summary =====
+    function renderSummary(){ const ym = sumMonth.value || monthKey(new Date()); sumMonth.value=ym; const items=[]; let inSum=0, outSum=0; for(const r of rooms){ for(const t of (r.transactions||[])){ if(t.date?.startsWith(ym)){ items.push({room:r.roomNumber, ...t}); if(t.type==='income') inSum+=Number(t.amount||0); else outSum+=Number(t.amount||0); } } } items.sort((a,b)=>a.date.localeCompare(b.date)); document.getElementById('kpiIn').textContent = money(inSum); document.getElementById('kpiOut').textContent = money(outSum); document.getElementById('kpiNet').textContent = money(inSum-outSum); const ul=document.getElementById('sumList'); ul.innerHTML=''; if(!items.length){ ul.innerHTML='<li class="muted" style="padding:10px">ไม่มีรายการในเดือนนี้</li>'; return; } for(const t of items){ const li=document.createElement('li'); li.innerHTML=`<span class="muted">${fmtTH(t.date)}</span><span>ห้อง ${t.room} · ${t.category}${t.detail?': '+t.detail:''}</span><span class="${t.type==='income'?'':'neg'}">${t.type==='income'?'+':'-'}${money(t.amount)}</span>`; ul.appendChild(li); } }
+    document.getElementById('sumMonth').addEventListener('change', renderSummary);
 
-    function handleTxTypeChange() {
-      if(document.getElementById('txType').value==='income') {
-        document.getElementById('incomeFields').style.display = 'block';
-        document.getElementById('expenseFields').style.display = 'none';
-      } else {
-        document.getElementById('incomeFields').style.display = 'none';
-        document.getElementById('expenseFields').style.display = 'block';
-        handleExpenseCategory();
-      }
-    }
-    function handleExpenseCategory() {
-      const cat = document.getElementById('expenseCategory').value;
-      const show = cat === 'อื่น ๆ';
-      document.getElementById('expenseOther').style.display = show?'block':'none';
-      document.querySelector('label[for="expenseOther"]').style.display = show?'block':'none';
-    }
+    // ===== Settings (Export / Import JSON) =====
+    document.getElementById('btnExport').addEventListener('click', ()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(rooms,null,2)],{type:'application/json'})); a.download='rentData.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500); });
+    document.getElementById('btnImport').addEventListener('click', ()=> document.getElementById('fileImport').click());
+    document.getElementById('fileImport').addEventListener('change', async (e)=>{ const f=e.target.files?.[0]; if(!f) return; try{ const txt=await f.text(); const data=JSON.parse(txt); if(!Array.isArray(data)) throw new Error('รูปแบบไม่ถูกต้อง (ต้องเป็น array)'); rooms=data; saveData(); alert('นำเข้าข้อมูลสำเร็จ'); renderRooms(); if(location.hash==='#summary') renderSummary(); }catch(err){ alert('นำเข้าข้อมูลผิดพลาด: '+(err.message||err)); } e.target.value=''; });
 
-    function addTransaction(e) {
-      e.preventDefault();
-      const roomId = document.getElementById('txRoomId').value;
-      const r = rooms.find(r=>r.id===roomId);
-      if(!r) return;
-      const type = document.getElementById('txType').value;
-      let category = '';
-      let date = '';
-      if(type==='income') {
-        category = document.getElementById('incomeCategory').value;
-        date = document.getElementById('incomeDate').value;
-        if(!date) { alert('กรุณาเลือกวันที่รับเงิน / Please select date'); return; }
-      } else {
-        category = document.getElementById('expenseCategory').value;
-        if(category==='อื่น ๆ') {
-          const v = document.getElementById('expenseOther').value.trim();
-          if(!v) { alert('กรุณาระบุหมวด / Please specify category'); return;}
-          category = v;
-        }
-        date = document.getElementById('expenseDate').value;
-        if(!date) { alert('กรุณาเลือกวันที่จ่ายเงิน / Please select date'); return; }
-      }
-      const amount = parseFloat(document.getElementById('txAmount').value);
-      if(isNaN(amount)||amount<=0) { alert('จำนวนเงินไม่ถูกต้อง / Invalid amount'); return;}
-      const detail = document.getElementById('txDetail').value.trim();
-      r.transactions.push({id:genId(), type, category, date, amount, detail});
-      saveData();
-      renderRoomList();
-      closeTxModal();
-    }
+    // ===== Self-check =====
+    document.getElementById('btnSelfCheck').addEventListener('click', ()=>{ const ul=document.getElementById('testResults'); ul.innerHTML=''; const log=(ok,msg)=>{ const li=document.createElement('li'); li.innerHTML=`<span class="muted">${ok?'PASS':'FAIL'}</span><span>${msg}</span>`; ul.appendChild(li); };
+      try{ const before=rooms.length; const id=genId(); rooms.push({id,roomNumber:'ZZ_TEST',startDate:'2025-01-01',endDate:'2025-12-31',dueDay:15,transactions:[]}); saveData(); log(true,'เพิ่มห้องทดสอบ'); const r=rooms.find(x=>x.id===id); r.transactions.push({id:genId(),type:'income',category:'ค่าเช่า',date:'2025-02-01',amount:999}); saveData(); log(true,'เพิ่มธุรกรรม'); r.transactions.splice(0,1); saveData(); log(r.transactions.length===0,'ลบธุรกรรม'); rooms=rooms.filter(x=>x.id!==id); saveData(); log(rooms.length===before,'ลบห้องและคืนสถานะเดิม'); }catch(e){ log(false,'ผิดพลาด: '+(e?.message||e)); }
+    });
 
-    // ---------- Status Calculation ----------
-    function getRoomStatus(room) {
-      // 1. Red: หมดสัญญาภายใน 3 เดือน
-      // 2. Yellow: เลยวันครบกำหนดชำระเดือนนี้ และไม่มีรายการค่าเช่าในเดือนนั้น
-      // 3. Green: ห้องปกติ
-      // 4. No color: ว่าง (ไม่มีธุรกรรม)
-      const now = new Date();
-      const end = new Date(room.endDate);
-      const diffMonths = (end.getFullYear()-now.getFullYear())*12 + (end.getMonth()-now.getMonth());
-      if(room.transactions.length===0) return {key:'muted',text:'ว่าง / Vacant'};
-      if(diffMonths<3 || (diffMonths===3 && end.getDate()<=now.getDate())) return {key:'red',text:'หมดสัญญาใน 3 เดือน / Contract Ends in 3 Months'};
-      // check yellow: เลยวันครบกำหนดชำระเดือนนี้ และไม่มีค่าเช่าเดือนนี้
-      const dueDay = room.dueDay;
-      const thisMonth = now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0');
-      const rentExists = room.transactions.some(tx=>
-        tx.type==='income' && tx.category==='ค่าเช่า'
-        && tx.date && tx.date.startsWith(thisMonth)
-      );
-      const dueDate = new Date(now.getFullYear(), now.getMonth(), dueDay);
-      if(now > dueDate && !rentExists) return {key:'yellow',text:'เลยวันครบกำหนดชำระ / Overdue Payment'};
-      // Normal
-      return {key:'green',text:'ปกติ / Normal'};
-    }
-
-    function sortRoomsByStatus(roomsArr) {
-      return roomsArr.slice().sort((a,b)=>{
-        // red(0), yellow(1), green(2), muted(3)
-        const rank = {'red':0,'yellow':1,'green':2,'muted':3};
-        return rank[getRoomStatus(a).key] - rank[getRoomStatus(b).key] ||
-          a.roomNumber.localeCompare(b.roomNumber,'th');
-      });
-    }
-
-    // ---------- Render ----------
-    function renderRoomList() {
-      const list = document.getElementById('roomList');
-      list.innerHTML = '';
-      const sorted = sortRoomsByStatus(rooms);
-      for(const room of sorted) {
-        const status = getRoomStatus(room);
-        const li = document.createElement('li');
-        li.className = `room-card room-border-${status.key}`;
-        // Header
-        const head = document.createElement('div');
-        head.className = 'room-header';
-        head.innerHTML = `<span class="room-title">ห้อง ${room.roomNumber}</span>
-          <span class="room-status status-${status.key}">${status.text}</span>`;
-        const actions = document.createElement('div');
-        actions.className = 'room-actions';
-        actions.innerHTML = `
-          <button onclick="editRoom('${room.id}')">แก้ไข</button>
-          <button onclick="deleteRoom('${room.id}')">ลบ</button>
-          <button onclick="openTxModal('${room.id}')">เพิ่มรายรับ/รายจ่าย</button>
-        `;
-        head.appendChild(actions);
-        li.appendChild(head);
-
-        // Details
-        const det = document.createElement('div');
-        det.className = 'room-details';
-        det.innerHTML =
-          `<div>สัญญา: ${formatDateTH(room.startDate)} - ${formatDateTH(room.endDate)}</div>
-           <div>วันครบกำหนดชำระ / Due Day: ${room.dueDay}</div>`;
-        li.appendChild(det);
-
-        // Log
-        const txs = room.transactions.slice().sort((a,b)=>a.date.localeCompare(b.date));
-        const ul = document.createElement('ul');
-        ul.className = 'tx-log';
-        let sum = 0;
-        for(const tx of txs) {
-          sum += tx.type==='income'?tx.amount:-tx.amount;
-          const li2 = document.createElement('li');
-          li2.innerHTML = `
-            <span class="tx-date">${formatDateTH(tx.date)}</span>
-            <span class="tx-detail">${tx.category}${tx.detail?': '+tx.detail:''}</span>
-            <span class="${tx.type==='income'?'tx-income':'tx-expense'}">${tx.type==='income'?'+':'-'}${tx.amount.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
-          `;
-          ul.appendChild(li2);
-        }
-        li.appendChild(ul);
-        const summary = document.createElement('div');
-        summary.className = 'tx-summary';
-        summary.innerHTML = `ยอดสุทธิ / Net: <span style="color:${sum>=0?'#34a853':'#e53935'}">${sum>=0?'+':'-'}${Math.abs(sum).toLocaleString(undefined,{minimumFractionDigits:2})}</span>`;
-        li.appendChild(summary);
-
-        list.appendChild(li);
-      }
-    }
-
-    // ---------- Event Bindings ----------
-    document.getElementById('roomForm').addEventListener('submit', addOrUpdateRoom);
-    document.getElementById('cancelEditBtn').addEventListener('click', cancelEditRoom);
-
-    // Transaction Modal
-    window.editRoom = editRoom;
-    window.deleteRoom = deleteRoom;
-    window.openTxModal = openTxModal;
-    document.getElementById('closeTxModalBtn').onclick = closeTxModal;
-    document.getElementById('txType').onchange = handleTxTypeChange;
-    document.getElementById('expenseCategory').onchange = handleExpenseCategory;
-    document.getElementById('txForm').onsubmit = addTransaction;
-
-    // Import/Export
-    document.getElementById('exportBtn').onclick = exportData;
-    document.getElementById('importInput').onchange = function(e) {
-      const file = e.target.files[0];
-      if(file) importData(file);
-      e.target.value = '';
-    };
-
-    // ---------- First load ----------
-    loadData();
-    renderRoomList();
-    updateBackupFile();
-
-    // For direct access in inline HTML event (edit/delete/openTxModal)
-    window.editRoom = editRoom;
-    window.deleteRoom = deleteRoom;
-    window.openTxModal = openTxModal;
+    // ===== Boot =====
+    function boot(){ loadData(); renderRooms(); route(); if(location.hash==='#summary') renderSummary(); }
+    // Navigation buttons
+    document.getElementById('goSummary').addEventListener('click',()=>{location.hash='summary'; route();});
+    document.getElementById('goSettings').addEventListener('click',()=>{location.hash='settings'; route();});
+    boot();
   </script>
 </body>
 </html>
