@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SmartRent Manager V2</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Noto+Sans+Thai:wght@300..700&display=swap');
+        
+        /* --- CORE STYLES --- */
+        body {
+            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f8fafc; /* slate-50 */
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Fallback for Tailwind hidden class */
+        .hidden { display: none !important; }
+        
+        .page-content { display: none; }
+        .active-page { display: block; }
+        
+        /* Shadows & Cards */
+        .shadow-app { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3); }
+        .card-surface { background-color: #1e293b; /* slate-800 */ color: #f8fafc; }
+        .card-modal { background-color: #1e293b; color: #f8fafc; }
+
+        /* Inputs */
+        input, select, textarea {
+            background-color: #334155; /* slate-700 */
+            color: #f8fafc;
+            border: 1px solid #475569; /* slate-600 */
+            transition: all 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #6366f1; /* indigo-500 */
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* Navigation */
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+            color: #64748b; /* slate-500 */
+            transition: all 0.2s;
+            flex-grow: 1;
+        }
+        .nav-item.active { color: #818cf8; /* indigo-400 */ }
+        .nav-item:active { transform: scale(0.95); }
+        
+        /* Layout */
+        #app-wrapper {
+            padding-top: 60px; 
+            padding-bottom: 80px; 
+            overflow-y: auto;
+            height: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Status Colors */
+        .status-red { background-color: #ef4444; }
+        .status-yellow { background-color: #eab308; }
+        .status-green { background-color: #10b981; }
+        .status-gray { background-color: #475569; }
+
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 h-14 bg-slate-800 shadow-app z-40 flex items-center px-4 justify-between border-b border-slate-700">
+        <h1 id="pageTitle" class="text-lg font-bold text-indigo-400">ห้องทั้งหมด</h1>
+        <button id="fabAddRoom" onclick="openRoomModal(null)" 
+                class="w-8 h-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg flex items-center justify-center transition active:scale-95">
+            <i class="fas fa-plus"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <div id="app-wrapper">
+        <div id="app" class="p-4 max-w-lg mx-auto">
+
+            <!-- PAGE 1: ROOMS -->
+            <div id="pageRooms" class="page-content active-page space-y-4">
+                <div id="roomList" class="space-y-3 pb-10"></div>
+                
+                <div id="noDataMessage" class="hidden text-center py-20 px-6 card-surface rounded-xl border border-dashed border-slate-600">
+                    <i class="fas fa-home text-4xl text-slate-600 mb-4"></i>
+                    <p class="text-slate-400 text-lg">ยังไม่มีข้อมูลห้องเช่า</p>
+                    <p class="text-slate-500 text-sm mt-2">แตะปุ่ม + ด้านบนเพื่อเริ่มใช้งาน</p>
+                </div>
+            </div>
+
+            <!-- PAGE 2: SUMMARY -->
+            <div id="pageSummary" class="page-content">
+                <div class="card-surface p-4 rounded-xl shadow-lg mb-6 sticky top-0 z-30 border-b border-slate-700">
+                    <div class="flex space-x-2">
+                        <select id="filterMonth" onchange="renderSummaryPage()" class="flex-1 p-2 rounded-lg text-sm bg-slate-700 border-slate-600 text-white">
+                            <option value="all">ทุกเดือน</option>
+                            <option value="1">มกราคม</option>
+                            <option value="2">กุมภาพันธ์</option>
+                            <option value="3">มีนาคม</option>
+                            <option value="4">เมษายน</option>
+                            <option value="5">พฤษภาคม</option>
+                            <option value="6">มิถุนายน</option>
+                            <option value="7">กรกฎาคม</option>
+                            <option value="8">สิงหาคม</option>
+                            <option value="9">กันยายน</option>
+                            <option value="10">ตุลาคม</option>
+                            <option value="11">พฤศจิกายน</option>
+                            <option value="12">ธันวาคม</option>
+                        </select>
+                        <select id="filterYear" onchange="renderSummaryPage()" class="flex-1 p-2 rounded-lg text-sm bg-slate-700 border-slate-600 text-white">
+                            <option value="all">ทุกปี</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-surface p-5 rounded-xl shadow-lg mb-6 border border-indigo-500/30 bg-gradient-to-br from-slate-800 to-slate-900">
+                    <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">ยอดรวมทั้งหมด (ช่วงเวลาที่เลือก)</h3>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-3xl font-bold text-white" id="summaryTotalBalance">฿0</p>
+                            <p class="text-xs text-slate-500 mt-1">กำไรสุทธิ</p>
+                        </div>
+                        <div class="text-right space-y-1">
+                            <p class="text-xs text-green-400 flex items-center justify-end"><i class="fas fa-arrow-down mr-1"></i> <span id="summaryTotalIncome">0</span></p>
+                            <p class="text-xs text-red-400 flex items-center justify-end"><i class="fas fa-arrow-up mr-1"></i> <span id="summaryTotalExpense">0</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-sm font-semibold text-slate-400 mb-3 px-1">สรุปแยกห้อง</h3>
+                <div id="summaryReport" class="space-y-3 pb-10"></div>
+            </div>
+
+            <!-- PAGE 3: SETTINGS -->
+            <div id="pageSettings" class="page-content space-y-4">
+                <div class="card-surface p-5 rounded-xl shadow-lg border border-slate-700">
+                    <h3 class="text-lg font-bold text-white mb-2"><i class="fas fa-database mr-2 text-indigo-400"></i>จัดการข้อมูล</h3>
+                    <p class="text-xs text-slate-400 mb-4">ข้อมูลจะถูกบันทึกในเครื่องนี้เท่านั้น (LocalStorage)</p>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="exportDataToCsv()" class="btn-secondary bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-file-export mr-1"></i> Export CSV
+                        </button>
+                        <button onclick="document.getElementById('importFileInput').click()" class="btn-secondary bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg text-sm font-medium transition">
+                            <i class="fas fa-file-import mr-1"></i> Import JSON
+                        </button>
+                    </div>
+                    <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleImportClick()">
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-600">
+                        <button onclick="hardReset()" class="w-full text-red-400 text-xs py-2 hover:bg-red-900/20 rounded">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> ล้างข้อมูลทั้งหมด (Reset App)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-slate-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)] z-50 border-t border-slate-700 h-16">
+        <div class="flex h-full max-w-lg mx-auto">
+            <button onclick="navigateTo('rooms')" id="navRooms" class="nav-item active">
+                <i class="fas fa-home text-xl mb-1"></i>
+                <span class="text-[10px]">ห้องพัก</span>
+            </button>
+            <button onclick="navigateTo('summary')" id="navSummary" class="nav-item">
+                <i class="fas fa-chart-pie text-xl mb-1"></i>
+                <span class="text-[10px]">สรุปบัญชี</span>
+            </button>
+            <button onclick="navigateTo('settings')" id="navSettings" class="nav-item">
+                <i class="fas fa-cog text-xl mb-1"></i>
+                <span class="text-[10px]">ตั้งค่า</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- MODALS -->
+    <!-- 1. Room Modal -->
+    <div id="roomModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="card-modal w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up">
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800">
+                <h3 id="roomModalTitle" class="font-bold text-lg">ห้องพัก</h3>
+                <button onclick="closeModal('roomModal')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <form id="roomForm" onsubmit="handleRoomFormSubmit(event)" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto custom-scroll">
+                <input type="hidden" id="roomIdInput">
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-1">
+                        <label class="block text-xs text-slate-400 mb-1">เลขห้อง*</label>
+                        <input type="text" id="roomNumberInput" required class="w-full p-2.5 rounded-lg text-center font-bold text-lg" placeholder="101">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs text-slate-400 mb-1">ชื่อผู้เช่า</label>
+                        <input type="text" id="tenantNameInput" class="w-full p-2.5 rounded-lg" placeholder="ชื่อเล่น หรือ ชื่อจริง">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">ค่าเช่า (บาท)*</label>
+                        <input type="number" id="rentAmountInput" required min="0" class="w-full p-2.5 rounded-lg" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">จ่ายทุกวันที่*</label>
+                        <input type="number" id="dueDayInput" required min="1" max="31" class="w-full p-2.5 rounded-lg" placeholder="1-31">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">เริ่มสัญญา</label>
+                        <input type="date" id="startDateInput" required class="w-full p-2.5 rounded-lg text-sm text-slate-300">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">สิ้นสุดสัญญา</label>
+                        <input type="date" id="endDateInput" required class="w-full p-2.5 rounded-lg text-sm text-slate-300">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">ลิงก์สัญญา (Optional)</label>
+                    <input type="url" id="contractLinkInput" class="w-full p-2.5 rounded-lg text-sm" placeholder="https://...">
+                </div>
+                <div class="pt-2 flex space-x-3">
+                    <button type="button" id="deleteRoomButton" onclick="requestDeleteRoom()" class="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 py-3 rounded-lg font-bold hidden transition">ลบ</button>
+                    <button type="submit" class="flex-[2] bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold shadow-lg transition">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Transaction Modal -->
+    <div id="transactionModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="card-modal w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800">
+                <h3 id="transactionModalTitle" class="font-bold text-lg">ธุรกรรม</h3>
+                <button onclick="closeModal('transactionModal')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 bg-slate-800 border-b border-slate-700">
+                <form id="transactionForm" onsubmit="handleTransactionFormSubmit(event)" class="space-y-3">
+                    <input type="hidden" id="transactionRoomIdInput">
+                    <div class="flex space-x-2">
+                        <select id="transactionTypeInput" class="w-1/3 p-2 rounded-lg bg-slate-700 font-medium">
+                            <option value="income">รายรับ (+)</option>
+                            <option value="expense">รายจ่าย (-)</option>
+                        </select>
+                        <input type="date" id="transactionDateInput" required class="flex-1 p-2 rounded-lg text-sm">
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="number" id="transactionAmountInput" required placeholder="จำนวนเงิน" class="w-1/3 p-2 rounded-lg">
+                        <input type="text" id="transactionDetailInput" required placeholder="รายละเอียด" class="flex-1 p-2 rounded-lg">
+                    </div>
+                     <input type="url" id="proofLinkInput" placeholder="ลิงก์สลิป/หลักฐาน (ถ้ามี)" class="w-full p-2 rounded-lg text-sm">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-white py-2 rounded-lg font-bold shadow-md">เพิ่มรายการ</button>
+                </form>
+            </div>
+            <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2 bg-slate-900" id="transactionList"></div>
+        </div>
+    </div>
+
+    <!-- 3. Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="card-modal w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800">
+                <h3 id="taskModalTitle" class="font-bold text-lg">งานซ่อมบำรุง</h3>
+                <button onclick="closeModal('taskModal')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 bg-slate-800 border-b border-slate-700">
+                <form id="taskForm" onsubmit="handleTaskFormSubmit(event)" class="space-y-3">
+                    <input type="hidden" id="taskRoomIdInput">
+                    <input type="text" id="taskDetailInput" required placeholder="ชื่องาน (เช่น ล้างแอร์)" class="w-full p-2 rounded-lg">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-slate-400 block mb-1">ความถี่</label>
+                            <select id="taskFrequencyInput" onchange="toggleTaskDeadline()" class="w-full p-2 rounded-lg text-sm">
+                                <option value="0">ทำครั้งเดียว</option>
+                                <option value="3">ทุก 3 เดือน</option>
+                                <option value="6">ทุก 6 เดือน</option>
+                                <option value="12">ทุก 1 ปี</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label id="taskDeadlineLabel" class="text-[10px] text-slate-400 block mb-1">กำหนดเสร็จ</label>
+                            <input type="date" id="taskDeadlineInput" class="w-full p-2 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div id="lastCompletedGroup" class="hidden">
+                        <label class="text-[10px] text-slate-400 block mb-1">ทำเสร็จล่าสุดวันที่</label>
+                        <input type="date" id="taskLastCompletedInput" class="w-full p-2 rounded-lg text-sm">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg font-bold shadow-md">บันทึกงาน</button>
+                </form>
+            </div>
+            <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2 bg-slate-900" id="taskList"></div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="msgBox" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-600 px-6 py-3 rounded-full shadow-2xl z-[60] text-sm font-medium transition-all duration-300 opacity-0 pointer-events-none flex items-center">
+        <span id="msgText">Notification</span>
+    </div>
+
+    <script>
+        // *** CHANGED STORAGE KEY TO FORCE FRESH START ***
+        const STORAGE_KEY = 'SMART_RENT_V2_NEW'; 
+        let rentalData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initYearDropdown();
+            loadData();
+            navigateTo('rooms');
+        });
+
+        function initYearDropdown() {
+            const yearSelect = document.getElementById('filterYear');
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear + 1; y >= currentYear - 5; y--) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.innerText = y + 543;
+                yearSelect.appendChild(opt);
+            }
+            yearSelect.value = 'all'; 
+        }
+
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active-page'));
+            document.getElementById('page' + pageId.charAt(0).toUpperCase() + pageId.slice(1)).classList.add('active-page');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav' + pageId.charAt(0).toUpperCase() + pageId.slice(1)).classList.add('active');
+
+            const fab = document.getElementById('fabAddRoom');
+            const title = document.getElementById('pageTitle');
+            
+            if (pageId === 'rooms') {
+                fab.classList.remove('hidden');
+                title.innerText = 'ห้องทั้งหมด';
+                renderRooms();
+            } else if (pageId === 'summary') {
+                fab.classList.add('hidden');
+                title.innerText = 'สรุปรายรับ-รายจ่าย';
+                renderSummaryPage();
+            } else {
+                fab.classList.add('hidden');
+                title.innerText = 'ตั้งค่า';
+            }
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                rentalData = raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.error("Load Error", e);
+                rentalData = [];
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rentalData));
+            showToast('บันทึกเรียบร้อย');
+        }
+
+        function hardReset() {
+            if(confirm('คุณแน่ใจหรือไม่ว่าจะล้างข้อมูลทั้งหมด? ข้อมูลจะหายไปถาวร')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function getNextDeadline(lastCompletedStr, freqMonths) {
+            if (!lastCompletedStr || freqMonths <= 0) return null;
+            const date = new Date(lastCompletedStr);
+            if (isNaN(date.getTime())) return null;
+            date.setMonth(date.getMonth() + freqMonths);
+            return date;
+        }
+
+        function getRoomStatus(room) {
+            // SAFE GUARD: Invalid dates
+            try {
+                const today = new Date(); today.setHours(0,0,0,0);
+                const end = new Date(room.endDate);
+                
+                if (isNaN(end.getTime()) || end < today) return { type: 'vacant', color: 'status-gray', text: 'สัญญาหมด/ว่าง', prio: 0 };
+                
+                const warningDate = new Date(); warningDate.setDate(today.getDate() + 60);
+                if (end <= warningDate) return { type: 'critical', color: 'status-red', text: 'สัญญาใกล้หมด', prio: 3 };
+
+                if (room.tasks && Array.isArray(room.tasks)) {
+                    const hasOverdueTask = room.tasks.some(t => {
+                        if (t.isComplete) return false;
+                        let deadlineDate;
+                        if (t.frequencyMonths > 0 && t.lastCompletedDate) {
+                            deadlineDate = getNextDeadline(t.lastCompletedDate, t.frequencyMonths);
+                        } else if (t.deadline) {
+                            deadlineDate = new Date(t.deadline);
+                        }
+                        if (!deadlineDate || isNaN(deadlineDate.getTime())) return false;
+                        deadlineDate.setHours(23, 59, 59, 999);
+                        return deadlineDate < today;
+                    });
+                    if (hasOverdueTask) return { type: 'critical', color: 'status-red', text: 'มีงานซ่อมค้าง', prio: 3 };
+                }
+
+                const dueDay = room.dueDay || 1;
+                if (today.getDate() >= dueDay) {
+                    const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const hasPaid = room.transactions && room.transactions.some(t => {
+                        const tDate = new Date(t.date);
+                        return t.type === 'income' && Number(t.amount) >= Number(room.rentAmount) && tDate >= thisMonthStart;
+                    });
+                    if (!hasPaid) return { type: 'overdue', color: 'status-yellow', text: 'ค้างชำระ', prio: 2 };
+                }
+                return { type: 'normal', color: 'status-green', text: 'ปกติ', prio: 1 };
+            } catch (err) {
+                console.warn("Status Calc Error", err);
+                return { type: 'normal', color: 'status-gray', text: 'Error', prio: 0 };
+            }
+        }
+
+        function renderRooms() {
+            const container = document.getElementById('roomList');
+            const noData = document.getElementById('noDataMessage');
+            
+            if (!rentalData || rentalData.length === 0) {
+                container.innerHTML = '';
+                noData.classList.remove('hidden');
+                return;
+            }
+            noData.classList.add('hidden');
+
+            try {
+                const sorted = [...rentalData].map(r => ({...r, statusObj: getRoomStatus(r)})).sort((a, b) => {
+                    if (a.statusObj.prio !== b.statusObj.prio) return b.statusObj.prio - a.statusObj.prio;
+                    return a.roomNumber.localeCompare(b.roomNumber);
+                });
+
+                container.innerHTML = sorted.map(r => `
+                    <div class="card-surface rounded-xl overflow-hidden shadow-app relative group border-l-4 ${r.statusObj.color}">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white leading-none">${r.roomNumber}</h3>
+                                    <p class="text-sm text-slate-400 mt-1">${r.tenantName || '-'}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-slate-700 text-slate-300 tracking-wide">${r.statusObj.text}</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-end mt-4 pt-3 border-t border-slate-700/50">
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase">ค่าเช่า</p>
+                                    <p class="text-lg font-bold text-indigo-400">฿${Number(r.rentAmount).toLocaleString()}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="openTaskModal('${r.id}')" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition"><i class="fas fa-wrench text-xs"></i></button>
+                                    <button onclick="openTransactionModal('${r.id}')" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition"><i class="fas fa-file-invoice-dollar text-xs"></i></button>
+                                    <button onclick="openRoomModal('${r.id}')" class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-slate-300 transition"><i class="fas fa-pen text-xs"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Render Error", e);
+                container.innerHTML = '<p class="text-red-500 text-center p-4">เกิดข้อผิดพลาดในการแสดงผล กรุณากดล้างข้อมูลในหน้าตั้งค่า</p>';
+            }
+        }
+
+        function renderSummaryPage() {
+            const container = document.getElementById('summaryReport');
+            const monthFilter = document.getElementById('filterMonth').value;
+            const yearFilter = document.getElementById('filterYear').value;
+
+            let globalIncome = 0;
+            let globalExpense = 0;
+
+            // Safe map
+            const html = (rentalData || []).sort((a,b)=>a.roomNumber.localeCompare(b.roomNumber)).map(r => {
+                let roomIncome = 0;
+                let roomExpense = 0;
+                (r.transactions || []).forEach(t => {
+                    const d = new Date(t.date);
+                    if (isNaN(d.getTime())) return;
+                    const mMatch = monthFilter === 'all' || (d.getMonth() + 1) == monthFilter;
+                    const yMatch = yearFilter === 'all' || d.getFullYear() == yearFilter;
+                    if (mMatch && yMatch) {
+                        if (t.type === 'income') roomIncome += Number(t.amount);
+                        else roomExpense += Number(t.amount);
+                    }
+                });
+                globalIncome += roomIncome;
+                globalExpense += roomExpense;
+                const net = roomIncome - roomExpense;
+
+                return `
+                <div class="card-surface p-4 rounded-xl shadow-sm border border-slate-700 flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center font-bold text-slate-300">${r.roomNumber}</div>
+                        <div>
+                            <p class="text-xs text-slate-500">สุทธิ</p>
+                            <p class="font-bold text-lg ${net >= 0 ? 'text-indigo-400' : 'text-red-400'}">${net >= 0 ? '+' : ''}${net.toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div class="text-right text-xs space-y-1">
+                        <p class="text-green-500 font-medium">+${roomIncome.toLocaleString()}</p>
+                        <p class="text-red-500 font-medium">-${roomExpense.toLocaleString()}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = html;
+            document.getElementById('summaryTotalIncome').innerText = globalIncome.toLocaleString();
+            document.getElementById('summaryTotalExpense').innerText = globalExpense.toLocaleString();
+            const totalNet = globalIncome - globalExpense;
+            const balEl = document.getElementById('summaryTotalBalance');
+            balEl.innerText = `฿${totalNet.toLocaleString()}`;
+            balEl.className = `text-3xl font-bold ${totalNet >= 0 ? 'text-white' : 'text-red-500'}`;
+        }
+
+        // --- COMMON MODAL FUNCS ---
+        function openRoomModal(id) {
+            const modal = document.getElementById('roomModal');
+            const form = document.getElementById('roomForm');
+            const delBtn = document.getElementById('deleteRoomButton');
+            form.reset();
+            document.getElementById('roomIdInput').value = '';
+            
+            if (id) {
+                const r = rentalData.find(x => x.id === id);
+                document.getElementById('roomIdInput').value = r.id;
+                document.getElementById('roomNumberInput').value = r.roomNumber;
+                document.getElementById('tenantNameInput').value = r.tenantName;
+                document.getElementById('rentAmountInput').value = r.rentAmount;
+                document.getElementById('dueDayInput').value = r.dueDay;
+                document.getElementById('startDateInput').value = r.startDate;
+                document.getElementById('endDateInput').value = r.endDate;
+                document.getElementById('contractLinkInput').value = r.contractLink || '';
+                document.getElementById('roomModalTitle').innerText = `แก้ไขห้อง ${r.roomNumber}`;
+                delBtn.classList.remove('hidden');
+            } else {
+                document.getElementById('roomModalTitle').innerText = 'เพิ่มห้องใหม่';
+                document.getElementById('startDateInput').value = new Date().toISOString().split('T')[0];
+                document.getElementById('endDateInput').value = new Date().toISOString().split('T')[0];
+                document.getElementById('dueDayInput').value = 1;
+                delBtn.classList.add('hidden');
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function handleRoomFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('roomIdInput').value;
+            const data = {
+                roomNumber: document.getElementById('roomNumberInput').value,
+                tenantName: document.getElementById('tenantNameInput').value,
+                rentAmount: Number(document.getElementById('rentAmountInput').value),
+                dueDay: Number(document.getElementById('dueDayInput').value),
+                startDate: document.getElementById('startDateInput').value,
+                endDate: document.getElementById('endDateInput').value,
+                contractLink: document.getElementById('contractLinkInput').value,
+            };
+            if (id) {
+                const idx = rentalData.findIndex(x => x.id === id);
+                rentalData[idx] = { ...rentalData[idx], ...data };
+            } else {
+                rentalData.push({ id: 'r-' + Date.now(), tasks:[], transactions:[], ...data });
+            }
+            saveData();
+            closeModal('roomModal');
+            renderRooms();
+        }
+
+        function requestDeleteRoom() {
+            if(confirm('ลบห้องนี้และข้อมูลทั้งหมด?')) {
+                const id = document.getElementById('roomIdInput').value;
+                rentalData = rentalData.filter(r => r.id !== id);
+                saveData();
+                closeModal('roomModal');
+                renderRooms();
+            }
+        }
+
+        function openTransactionModal(roomId) {
+            const modal = document.getElementById('transactionModal');
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transactionRoomIdInput').value = roomId;
+            document.getElementById('transactionDateInput').value = new Date().toISOString().split('T')[0];
+            const r = rentalData.find(x => x.id === roomId);
+            document.getElementById('transactionModalTitle').innerText = `ธุรกรรม - ${r.roomNumber}`;
+            renderTransactionList(r);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function renderTransactionList(room) {
+            const list = document.getElementById('transactionList');
+            const sorted = [...(room.transactions || [])].sort((a,b) => new Date(b.date) - new Date(a.date));
+            if(sorted.length === 0) {
+                list.innerHTML = `<p class="text-center text-slate-500 py-4 text-xs">ไม่มีรายการ</p>`;
+                return;
+            }
+            list.innerHTML = sorted.map(t => `
+                <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg border border-slate-700">
+                    <div>
+                        <p class="text-sm font-medium text-slate-200">${t.detail}</p>
+                        <p class="text-[10px] text-slate-400">${t.date}</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="font-bold text-sm ${t.type === 'income' ? 'text-green-400' : 'text-red-400'}">${t.type === 'income' ? '+' : '-'}${Number(t.amount).toLocaleString()}</span>
+                        <button onclick="deleteTransaction('${room.id}', '${t.id}')" class="text-slate-500 hover:text-red-400"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleTransactionFormSubmit(e) {
+            e.preventDefault();
+            const rid = document.getElementById('transactionRoomIdInput').value;
+            const room = rentalData.find(r => r.id === rid);
+            if(!room.transactions) room.transactions = [];
+            room.transactions.push({
+                id: 't-' + Date.now(),
+                type: document.getElementById('transactionTypeInput').value,
+                date: document.getElementById('transactionDateInput').value,
+                amount: document.getElementById('transactionAmountInput').value,
+                detail: document.getElementById('transactionDetailInput').value,
+                proofLink: document.getElementById('proofLinkInput').value
+            });
+            saveData();
+            document.getElementById('transactionForm').reset();
+            document.getElementById('transactionDateInput').value = new Date().toISOString().split('T')[0];
+            renderTransactionList(room);
+            renderRooms();
+        }
+
+        function deleteTransaction(rid, tid) {
+            if(!confirm('ลบรายการนี้?')) return;
+            const room = rentalData.find(r => r.id === rid);
+            room.transactions = room.transactions.filter(t => t.id !== tid);
+            saveData();
+            renderTransactionList(room);
+            renderRooms();
+        }
+
+        function openTaskModal(roomId) {
+            const modal = document.getElementById('taskModal');
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskRoomIdInput').value = roomId;
+            document.getElementById('taskFrequencyInput').value = '0';
+            toggleTaskDeadline();
+            const r = rentalData.find(x => x.id === roomId);
+            document.getElementById('taskModalTitle').innerText = `งานซ่อม - ${r.roomNumber}`;
+            renderTaskList(r);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function toggleTaskDeadline() {
+            const freq = document.getElementById('taskFrequencyInput').value;
+            const deadlineGroup = document.getElementById('taskDeadlineInput').parentElement;
+            const lastGroup = document.getElementById('lastCompletedGroup');
+            if (freq === '0') {
+                deadlineGroup.classList.remove('hidden');
+                document.getElementById('taskDeadlineLabel').innerText = "กำหนดเสร็จ";
+                document.getElementById('taskDeadlineInput').required = true;
+                lastGroup.classList.add('hidden');
+                document.getElementById('taskLastCompletedInput').required = false;
+            } else {
+                deadlineGroup.classList.add('hidden');
+                document.getElementById('taskDeadlineInput').required = false;
+                lastGroup.classList.remove('hidden');
+                document.getElementById('taskLastCompletedInput').required = true;
+                document.getElementById('taskLastCompletedInput').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function renderTaskList(room) {
+            const list = document.getElementById('taskList');
+            const sorted = [...(room.tasks || [])].sort((a,b) => (a.isComplete === b.isComplete) ? 0 : a.isComplete ? 1 : -1);
+            if(sorted.length === 0) {
+                list.innerHTML = `<p class="text-center text-slate-500 py-4 text-xs">ไม่มีงานค้าง</p>`;
+                return;
+            }
+            list.innerHTML = sorted.map(t => {
+                let displayDate = "";
+                let isOverdue = false;
+                if (t.isComplete) {
+                     displayDate = "เสร็จแล้ว";
+                } else {
+                    let dObj;
+                    if(t.frequencyMonths > 0 && t.lastCompletedDate) dObj = getNextDeadline(t.lastCompletedDate, t.frequencyMonths);
+                    else if (t.deadline) dObj = new Date(t.deadline);
+                    
+                    if(dObj && !isNaN(dObj.getTime())) {
+                        const today = new Date(); today.setHours(0,0,0,0);
+                        isOverdue = dObj < today;
+                        displayDate = dObj.toLocaleDateString('th-TH');
+                    } else displayDate = "N/A";
+                }
+                return `
+                <div class="flex items-center p-3 bg-slate-800 rounded-lg border border-slate-700 ${t.isComplete ? 'opacity-50' : ''}">
+                    <input type="checkbox" ${t.isComplete ? 'checked' : ''} onchange="toggleTask('${room.id}', '${t.id}')" class="w-5 h-5 mr-3 rounded accent-indigo-500 cursor-pointer">
+                    <div class="flex-1">
+                        <p class="text-sm font-medium ${t.isComplete ? 'line-through text-slate-500' : 'text-slate-200'}">${t.detail}</p>
+                        <div class="flex items-center text-[10px] space-x-2 mt-1">
+                            <span class="${t.isComplete ? 'text-green-400' : (isOverdue ? 'text-red-400 font-bold' : 'text-slate-400')}"><i class="far fa-clock mr-1"></i>${displayDate}</span>
+                            ${t.frequencyMonths > 0 ? '<span class="text-slate-500 italic">↺ ทุก '+t.frequencyMonths+' ด.</span>' : ''}
+                        </div>
+                    </div>
+                    <button onclick="deleteTask('${room.id}', '${t.id}')" class="text-slate-600 hover:text-red-400 ml-2"><i class="fas fa-times"></i></button>
+                </div>
+            `}).join('');
+        }
+
+        function handleTaskFormSubmit(e) {
+            e.preventDefault();
+            const rid = document.getElementById('taskRoomIdInput').value;
+            const room = rentalData.find(r => r.id === rid);
+            if(!room.tasks) room.tasks = [];
+            const freq = Number(document.getElementById('taskFrequencyInput').value);
+            room.tasks.push({
+                id: 'job-' + Date.now(),
+                detail: document.getElementById('taskDetailInput').value,
+                frequencyMonths: freq,
+                deadline: freq === 0 ? document.getElementById('taskDeadlineInput').value : null,
+                lastCompletedDate: freq > 0 ? document.getElementById('taskLastCompletedInput').value : null,
+                isComplete: false
+            });
+            saveData();
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskFrequencyInput').value = '0';
+            toggleTaskDeadline();
+            renderTaskList(room);
+            renderRooms();
+        }
+
+        function toggleTask(rid, tid) {
+            const room = rentalData.find(r => r.id === rid);
+            const t = room.tasks.find(x => x.id === tid);
+            if (!t.isComplete) {
+                if (t.frequencyMonths > 0) {
+                    t.lastCompletedDate = new Date().toISOString().split('T')[0];
+                    showToast(`อัปเดตรอบงาน ${t.detail} แล้ว`);
+                } else t.isComplete = true;
+            } else t.isComplete = false;
+            saveData();
+            renderTaskList(room);
+            renderRooms();
+        }
+
+        function deleteTask(rid, tid) {
+            if(!confirm('ลบงานนี้?')) return;
+            const room = rentalData.find(r => r.id === rid);
+            room.tasks = room.tasks.filter(t => t.id !== tid);
+            saveData();
+            renderTaskList(room);
+            renderRooms();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        }
+
+        function showToast(msg) {
+            const el = document.getElementById('msgBox');
+            const txt = document.getElementById('msgText');
+            txt.innerText = msg;
+            el.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => el.classList.add('opacity-0', 'pointer-events-none'), 3000);
+        }
+
+        function exportDataToCsv() {
+            let csv = "Room,Tenant,Type,Date,Amount,Detail\n";
+            rentalData.forEach(r => {
+                (r.transactions || []).forEach(t => {
+                    csv += `"${r.roomNumber}","${r.tenantName}","${t.type}","${t.date}",${t.amount},"${t.detail}"\n`;
+                });
+            });
+            const blob = new Blob(["\uFEFF"+csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "rental_data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function handleImportClick() {
+            const input = document.getElementById('importFileInput');
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if(Array.isArray(json)) {
+                        rentalData = json;
+                        saveData();
+                        location.reload();
+                    } else alert('รูปแบบไฟล์ไม่ถูกต้อง');
+                } catch(err) { alert('Error reading file'); }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
